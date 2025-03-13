@@ -65,11 +65,13 @@ DOCKER_ROOT="/jetson-inference"	# where the project resides inside docker
 
 # generate mount commands
 DATA_VOLUME=" \
+--volume $PWD/build:$DOCKER_ROOT/build \
 --volume $PWD/data:$DOCKER_ROOT/data \
 --volume $PWD/$CLASSIFY_DIR/data:$DOCKER_ROOT/$CLASSIFY_DIR/data \
 --volume $PWD/$CLASSIFY_DIR/models:$DOCKER_ROOT/$CLASSIFY_DIR/models \
 --volume $PWD/$DETECTION_DIR/data:$DOCKER_ROOT/$DETECTION_DIR/data \
 --volume $PWD/$DETECTION_DIR/models:$DOCKER_ROOT/$DETECTION_DIR/models \
+--volume $PWD/$DETECTION_DIR/script:$DOCKER_ROOT/$DETECTION_DIR/script \
 --volume $PWD/$RECOGNIZER_DIR/data:$DOCKER_ROOT/$RECOGNIZER_DIR/data "
 
 # parse user arguments
