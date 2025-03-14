@@ -15,7 +15,10 @@
                      "--output-cvg=scores",
                      "--output-bbox=boxes",
                      "--threshold=0.2",
-                     "--overlay=box,shipname,line,label",
+                     "--tracking",
+                     "--tracker-min-frames=40",
+                     "--tracker-overlap=0.7",
+                     "--overlay=box,shipname,track",
                      "/home/nvidia/jetson-inference/data/IMG_8071.MOV", // input
                      "rtp://192.168.101.96:1234" // output
                     ],
