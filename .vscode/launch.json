@@ -1,0 +1,43 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/aarch64/bin/ship_explorer",
+            "args": ["--model=python/training/detection/ssd/models/ddsn_boat7_using_my_dataset/mb1-ssd-Epoch-499-Loss-2.1141648292541504.onnx",
+                     "--labels=python/training/detection/ssd/models/ddsn_boat7_using_my_dataset/labels.txt",
+                     "--input-blob=input_0",
+                     "--output-cvg=scores",
+                     "--output-bbox=boxes",
+                     "--threshold=0.2",
+                     "--overlay=box,shipname,line,label",
+                     "/home/nvidia/jetson-inference/data/IMG_8071.MOV", // input
+                     "rtp://192.168.101.96:1234" // output
+                    ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Make build (ship_explorer only)"
+        }
+
+    ]
+}
