@@ -19,6 +19,7 @@
                      "--tracker-min-frames=40",
                      "--tracker-overlap=0.7",
                      "--overlay=box,shipname,track",
+                     "--ais-ndjson=examples/ship_explorer/log_sample.ndjson",
                      "/home/nvidia/jetson-inference/data/IMG_8071.MOV", // input
                      "rtp://192.168.101.96:1234" // output
                     ],

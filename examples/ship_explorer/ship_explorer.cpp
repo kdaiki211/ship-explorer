@@ -26,7 +26,11 @@
 #include "detectNet.h"
 #include "objectTracker.h"
 
+#include "ais_loader.hpp"
+
+#include <iostream>
 #include <signal.h>
+#include <cassert>
 
 
 bool signal_recieved = false;
@@ -42,7 +46,7 @@ void sig_handler(int signo)
 
 int usage()
 {
-	printf("usage: detectnet [--help] [--network=NETWORK] [--threshold=THRESHOLD] ...\n");
+	printf("usage: ship_explorer [--help] [--network=NETWORK] [--threshold=THRESHOLD] ...\n");
 	printf("                 input [output]\n\n");
 	printf("Locate objects in a video/image stream using an object detection DNN.\n");
 	printf("See below for additional arguments that may not be shown above.\n\n");
@@ -70,6 +74,23 @@ int main( int argc, char** argv )
 	if( cmdLine.GetFlag("help") )
 		return usage();
 
+	/*
+	 * load AIS information
+	 */
+	AisLoader aisLoader;
+	auto aisNdjsonFilename = cmdLine.GetString("ais-ndjson");
+	if (aisNdjsonFilename) {
+		LogVerbose("Loading AIS from %s...\n", aisNdjsonFilename);
+		aisLoader = AisLoader(std::string(aisNdjsonFilename));
+	}
+	if (aisLoader.IsLoaded()) {
+		LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
+	}
+
+#if 0
+	std::cout << "bye" << std::endl;
+	return 0;
+#endif
 
 	/*
 	 * attach signal handler
@@ -114,7 +135,7 @@ int main( int argc, char** argv )
 	}
 
 	// parse overlay flags
-	const uint32_t overlayFlags = detectNet::OverlayFlagsFromStr(cmdLine.GetString("overlay", "box,labels,conf"));
+	const uint32_t overlayFlags = detectNet::OverlayFlagsFromStr(cmdLine.GetString("overlay", "box,shipname"));
 	
 
 	/*
