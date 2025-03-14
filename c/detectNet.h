@@ -209,6 +209,7 @@ public:
 		OVERLAY_CONFIDENCE = (1 << 2),	/**< Overlay the detection confidence values */
 		OVERLAY_TRACKING   = (1 << 3),	/**< Overlay tracking information (like track ID) */
 		OVERLAY_LINES      = (1 << 4),     /**< Overlay the bounding box lines (unfilled) */
+		OVERLAY_SHIPNAME   = (1 << 5),  /**< Overlay the ship name labels */
 		OVERLAY_DEFAULT    = OVERLAY_BOX|OVERLAY_LABEL|OVERLAY_CONFIDENCE, /**< The default choice of overlay */
 	};
 

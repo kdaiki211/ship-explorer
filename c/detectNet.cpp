@@ -1020,7 +1020,7 @@ bool detectNet::Overlay( void* input, void* output, uint32_t width, uint32_t hei
 	}
 			
 	// class label overlay
-	if( (flags & OVERLAY_LABEL) || (flags & OVERLAY_CONFIDENCE) || (flags & OVERLAY_TRACKING) )
+	if( (flags & OVERLAY_LABEL) || (flags & OVERLAY_CONFIDENCE) || (flags & OVERLAY_TRACKING) || (flags & OVERLAY_SHIPNAME ) )
 	{
 		static cudaFont* font = NULL;
 
@@ -1049,9 +1049,12 @@ bool detectNet::Overlay( void* input, void* output, uint32_t width, uint32_t hei
 			char buffer[256];
 			char* str = buffer;
 			
-			if( flags & OVERLAY_LABEL )
-				str += sprintf(str, "%s ", className);
+			if( flags & OVERLAY_SHIPNAME )
+				str += sprintf(str, "SHIPNAME "); // TODO: implement
 			
+			if( flags & OVERLAY_LABEL )
+				str += sprintf(str, "%s", className);
+
 			if( flags & OVERLAY_TRACKING && detections[n].TrackID >= 0 )
 				str += sprintf(str, "%i ", detections[n].TrackID);
 			
@@ -1110,7 +1113,7 @@ uint32_t detectNet::OverlayFlagsFromStr( const char* str_user )
 	if( !token )
 		return OVERLAY_DEFAULT;
 
-	// look for the tokens:  "box", "label", "default", and "none"
+	// look for the tokens
 	uint32_t flags = OVERLAY_NONE;
 
 	while( token != NULL )
@@ -1125,6 +1128,8 @@ uint32_t detectNet::OverlayFlagsFromStr( const char* str_user )
 			flags |= OVERLAY_TRACKING;
 		else if( strcasecmp(token, "line") == 0 || strcasecmp(token, "lines") == 0 )
 			flags |= OVERLAY_LINES;
+		else if( strcasecmp(token, "shipname") == 0 || strcasecmp(token, "shipnames") == 0 )
+			flags |= OVERLAY_SHIPNAME;
 		else if( strcasecmp(token, "default") == 0 )
 			flags |= OVERLAY_DEFAULT;
 
