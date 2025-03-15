@@ -33,10 +33,10 @@ void AisStreamReader::Update(time_t limitUnixTime) {
             continue;
         }
 
-        // remove the existing entry with the same name (will be found up to 1 entry)
-        auto curShipName = curShipIt->shipName;
-        auto it = find_if(currentShipInfo.begin(), currentShipInfo.end(), [curShipName](const AisUtil::ShipInfo& tmp) {
-            return tmp.shipName == curShipName;
+        // remove the existing entry with the same MMSI (will be found up to 1 entry)
+        auto curMmsi = curShipIt->mmsi;
+        auto it = find_if(currentShipInfo.begin(), currentShipInfo.end(), [curMmsi](const AisUtil::ShipInfo& tmp) {
+            return tmp.mmsi == curMmsi;
         });
         if (it != currentShipInfo.end()) {
             currentShipInfo.erase(it);
@@ -55,6 +55,6 @@ const vector<AisUtil::ShipInfo>& AisStreamReader::GetCurrentWindow(void) {
 
 void AisStreamReader::PrintCurrentWindow(void) {
     for (auto it = currentShipInfo.begin(); it != currentShipInfo.end(); it++) {
-        AisLoader::PrintShipInfo(*it);
+        AisUtil::PrintShipInfo(*it);
     }
 }

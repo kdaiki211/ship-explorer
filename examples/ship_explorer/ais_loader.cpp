@@ -81,6 +81,7 @@ AisUtil::ShipInfo AisLoader::parseJson(nlohmann::json jsonData) {
             // fill ShipInfo
             AisUtil::ShipInfo shipInfo;
             shipInfo.unixTime          = mktime(&tm);
+            shipInfo.mmsi              = metaData["MMSI"];
             shipInfo.shipName          = metaData["ShipName"];
             shipInfo.geoPos.latitude   = metaData["latitude"];
             shipInfo.geoPos.longitude  = metaData["longitude"];
@@ -99,18 +100,6 @@ AisUtil::ShipInfo AisLoader::parseJson(nlohmann::json jsonData) {
 
 bool AisLoader::IsLoaded(void) {
     return isLoaded;
-}
-
-void AisLoader::PrintShipInfo(AisUtil::ShipInfo& shipInfo) {
-    tm tm;
-    localtime_r(&shipInfo.unixTime, &tm);
-
-    // convert UTC to JST considering carry up
-    tm.tm_hour += 9;
-    auto unixTime = mktime(&tm);
-    localtime_r(&unixTime, &tm);
-
-    cout << put_time(&tm, "%Y-%m-%d %H:%M:%S") << " " << shipInfo.shipName << ", (" << shipInfo.geoPos.latitude << "," << shipInfo.geoPos.longitude << "), " << shipInfo.cog << " degs, " << shipInfo.sog << " knots" << endl;
 }
 
 size_t AisLoader::GetLoadedEntryCount(void) {

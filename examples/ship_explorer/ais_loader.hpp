@@ -16,7 +16,6 @@ public:
     bool IsLoaded(void);
     size_t GetLoadedEntryCount(void);
     const std::vector<AisUtil::ShipInfo>& GetLoadedShipInfo(void);
-    static void PrintShipInfo(AisUtil::ShipInfo& shipInfo);
 
 private:
     std::string ndjsonFileName;

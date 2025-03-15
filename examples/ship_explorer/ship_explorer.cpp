@@ -28,6 +28,7 @@
 
 #include "ais_loader.hpp"
 #include "ais_stream_reader.hpp"
+#include "ais_bbox_mapper.hpp"
 
 #include <iostream>
 #include <signal.h>
@@ -97,12 +98,20 @@ int main( int argc, char** argv )
 		tm.tm_hour = 3;
 		tm.tm_min  = 45;
 		tm.tm_sec  = 5;
+		asr.Update(mktime(&tm));
 
+		AisUtil::GeoCoords currentLocation = { 35.645812212748325, 139.75011314898728 }; // msb Tamachi, Tamachi Station Tower N
+		AisUtil::GeoCoords lookAt          = { 35.617081491541065, 139.76952237971688 };
+		AisBboxMapper mapper(currentLocation, lookAt);
 		for (int i = 0; i < 10; i++) {
-			std::cout << "[" << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << "]" << std::endl;
 			asr.Update(mktime(&tm));
+			mapper.UpdateLocalShipInfo(asr.GetCurrentWindow());
+
 			asr.PrintCurrentWindow();
 			std::cout << "---" << std::endl;
+			mapper.PrintCurrentLocalShipInfo();
+			std::cout << "===" << std::endl;
+
 			tm.tm_min++;
 		}
 	}
