@@ -69,7 +69,7 @@ json AisLoader::parseLine(string line) {
 AisLoader::ShipInfo AisLoader::parseJson(nlohmann::json jsonData) {
     try {
         const string msgType = jsonData["MessageType"];
-        const json msg       = jsonData["Message"];
+        // const json msg       = jsonData["Message"];
         const json metaData  = jsonData["MetaData"];
         if (msgType == "PositionReport") {
             // parse time_utc
@@ -80,8 +80,7 @@ AisLoader::ShipInfo AisLoader::parseJson(nlohmann::json jsonData) {
 
             // fill ShipInfo
             ShipInfo shipInfo;
-            shipInfo.utcTimeStr = datetimeStr;
-            shipInfo.utcTime    = tm;
+            shipInfo.unixTime   = mktime(&tm);
             shipInfo.shipName   = metaData["ShipName"];
             shipInfo.latitude   = metaData["latitude"];
             shipInfo.longitude  = metaData["longitude"];
@@ -101,6 +100,16 @@ bool AisLoader::IsLoaded(void) {
     return isLoaded;
 }
 
+void AisLoader::PrintShipInfo(ShipInfo& shipInfo) {
+    // tm *tm = gmtime(shipInfo.unixTime);
+    tm *tm = localtime(&shipInfo.unixTime);
+    cout << put_time(tm, "%Y-%m-%d %H:%M:%S") << " " << shipInfo.shipName << ", (" << shipInfo.latitude << "," << shipInfo.longitude << ")" << endl;
+}
+
 size_t AisLoader::GetLoadedEntryCount(void) {
     return shipInfo.size();
+}
+
+vector<AisLoader::ShipInfo> AisLoader::GetLoadedShipInfo(void) {
+    return shipInfo;
 }

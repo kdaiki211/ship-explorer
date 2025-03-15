@@ -1,6 +1,9 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <ctime>
 #include "json.hpp"
 
 class AisLoader {
@@ -12,12 +15,13 @@ public:
     bool IsLoaded(void);
     size_t GetLoadedEntryCount(void);
     typedef struct {
-        std::string utcTimeStr;
-        std::tm utcTime;
+        std::time_t unixTime;
         std::string shipName;
         double latitude;
         double longitude;
     } ShipInfo;
+    std::vector<ShipInfo> GetLoadedShipInfo(void);
+    static void PrintShipInfo(ShipInfo& shipInfo);
 
 private:
     std::string ndjsonFileName;

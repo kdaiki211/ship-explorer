@@ -27,6 +27,7 @@
 #include "objectTracker.h"
 
 #include "ais_loader.hpp"
+#include "ais_stream_reader.hpp"
 
 #include <iostream>
 #include <signal.h>
@@ -83,11 +84,29 @@ int main( int argc, char** argv )
 		LogVerbose("Loading AIS from %s...\n", aisNdjsonFilename);
 		aisLoader = AisLoader(std::string(aisNdjsonFilename));
 	}
+
+#if 1
 	if (aisLoader.IsLoaded()) {
 		LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
+
+		AisStreamReader asr(aisLoader.GetLoadedShipInfo());
+		tm tm = {};
+		tm.tm_year = 2025 - 1900;
+		tm.tm_mon  = 3 - 1;
+		tm.tm_mday = 12;
+		tm.tm_hour = 3;
+		tm.tm_min  = 45;
+		tm.tm_sec  = 5;
+
+		for (int i = 0; i < 10; i++) {
+			std::cout << "[" << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << "]" << std::endl;
+			asr.Update(mktime(&tm));
+			asr.PrintCurrentWindow();
+			std::cout << "---" << std::endl;
+			tm.tm_min++;
+		}
 	}
 
-#if 0
 	std::cout << "bye" << std::endl;
 	return 0;
 #endif
