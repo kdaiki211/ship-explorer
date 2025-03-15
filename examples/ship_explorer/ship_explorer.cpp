@@ -87,37 +87,25 @@ int main( int argc, char** argv )
 	}
 
 #if 1
-	if (aisLoader.IsLoaded()) {
-		LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
+	tm tm = {};
+	tm.tm_year = 2025 - 1900;
+	tm.tm_mon  = 3 - 1;
+	tm.tm_mday = 12;
+	tm.tm_hour = 3;
+	tm.tm_min  = 45;
+	tm.tm_sec  = 0;
+	assert(aisLoader.IsLoaded());
+	AisStreamReader asr(aisLoader.GetLoadedShipInfo());
+	LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
 
-		AisStreamReader asr(aisLoader.GetLoadedShipInfo());
-		tm tm = {};
-		tm.tm_year = 2025 - 1900;
-		tm.tm_mon  = 3 - 1;
-		tm.tm_mday = 12;
-		tm.tm_hour = 3;
-		tm.tm_min  = 45;
-		tm.tm_sec  = 5;
-		asr.Update(mktime(&tm));
+	asr.Update(mktime(&tm));
 
-		AisUtil::GeoCoords currentLocation = { 35.645812212748325, 139.75011314898728 }; // msb Tamachi, Tamachi Station Tower N
-		AisUtil::GeoCoords lookAt          = { 35.617081491541065, 139.76952237971688 };
-		AisBboxMapper mapper(currentLocation, lookAt);
-		for (int i = 0; i < 10; i++) {
-			asr.Update(mktime(&tm));
-			mapper.UpdateLocalShipInfo(asr.GetCurrentWindow());
+	AisUtil::GeoCoords currentLocation = { 35.645812212748325, 139.75011314898728 }; // msb Tamachi, Tamachi Station Tower N
+	AisUtil::GeoCoords lookAt          = { 35.617081491541065, 139.76952237971688 };
+	AisBboxMapper mapper(currentLocation, lookAt);
 
-			asr.PrintCurrentWindow();
-			std::cout << "---" << std::endl;
-			mapper.PrintCurrentLocalShipInfo();
-			std::cout << "===" << std::endl;
-
-			tm.tm_min++;
-		}
-	}
-
-	std::cout << "bye" << std::endl;
-	return 0;
+	// std::cout << "bye" << std::endl;
+	// return 0;
 #endif
 
 	/*
@@ -182,6 +170,12 @@ int main( int argc, char** argv )
 			
 			break; // EOS
 		}
+		// const int timestampInSec = input->GetLastTimestamp() / 1000 / 1000 / 1000; // don't use this: GetLastTimestamp() will be cleared to 0 when gstreamer failed to retrieve next image buffer
+		const int timestampInSec = input->GetFrameCount() / input->GetFrameRate();
+		LogVerbose("<<< timestampInSec = %d >>>\n", timestampInSec);
+		tm.tm_sec = timestampInSec;
+		asr.Update(mktime(&tm));
+		asr.PrintCurrentWindow();
 
 		// detect objects in the frame
 		detectNet::Detection* detections = NULL;
