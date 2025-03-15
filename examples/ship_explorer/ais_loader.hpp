@@ -15,20 +15,15 @@ public:
     bool LoadAisFromFile(std::string ndjsonFileName);
     bool IsLoaded(void);
     size_t GetLoadedEntryCount(void);
-    typedef struct {
-        std::time_t unixTime;
-        std::string shipName;
-        AisUtil::GeoCoords geoPos;
-    } ShipInfo;
-    const std::vector<ShipInfo>& GetLoadedShipInfo(void);
-    static void PrintShipInfo(ShipInfo& shipInfo);
+    const std::vector<AisUtil::ShipInfo>& GetLoadedShipInfo(void);
+    static void PrintShipInfo(AisUtil::ShipInfo& shipInfo);
 
 private:
     std::string ndjsonFileName;
     bool isLoaded;
-    std::vector<ShipInfo> shipInfo;
+    std::vector<AisUtil::ShipInfo> shipInfo;
 
     std::string fixLine(std::string line);
     nlohmann::json parseLine(std::string line);
-    ShipInfo parseJson(nlohmann::json jsonData);
+    AisUtil::ShipInfo parseJson(nlohmann::json jsonData);
 };

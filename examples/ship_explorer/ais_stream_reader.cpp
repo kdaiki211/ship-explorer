@@ -2,7 +2,7 @@
 #include "ais_stream_reader.hpp"
 using namespace std;
 
-AisStreamReader::AisStreamReader(const vector<AisLoader::ShipInfo>& shipInfo) : originalShipInfo(shipInfo) {
+AisStreamReader::AisStreamReader(const vector<AisUtil::ShipInfo>& shipInfo) : originalShipInfo(shipInfo) {
     cursor = 0;
     lastUpdatedUnixTime = 0;
     timeWindowSize = 60;
@@ -16,7 +16,7 @@ void AisStreamReader::Update(time_t limitUnixTime) {
     assert(lastUpdatedUnixTime <= limitUnixTime);
     assert(timeWindowSize <= limitUnixTime);
     auto startUnixTime = limitUnixTime - timeWindowSize;
-    auto it = remove_if(currentShipInfo.begin(), currentShipInfo.end(), [startUnixTime](const AisLoader::ShipInfo& tmp) {
+    auto it = remove_if(currentShipInfo.begin(), currentShipInfo.end(), [startUnixTime](const AisUtil::ShipInfo& tmp) {
         return tmp.unixTime < startUnixTime;
     });
     if (it != currentShipInfo.end()) {
@@ -35,7 +35,7 @@ void AisStreamReader::Update(time_t limitUnixTime) {
 
         // remove the existing entry with the same name (will be found up to 1 entry)
         auto curShipName = curShipIt->shipName;
-        auto it = find_if(currentShipInfo.begin(), currentShipInfo.end(), [curShipName](const AisLoader::ShipInfo& tmp) {
+        auto it = find_if(currentShipInfo.begin(), currentShipInfo.end(), [curShipName](const AisUtil::ShipInfo& tmp) {
             return tmp.shipName == curShipName;
         });
         if (it != currentShipInfo.end()) {
@@ -49,7 +49,7 @@ void AisStreamReader::Update(time_t limitUnixTime) {
     lastUpdatedUnixTime = limitUnixTime;
 }
 
-const deque<AisLoader::ShipInfo>& AisStreamReader::GetCurrentWindow(void) {
+const deque<AisUtil::ShipInfo>& AisStreamReader::GetCurrentWindow(void) {
     return currentShipInfo;
 }
 
