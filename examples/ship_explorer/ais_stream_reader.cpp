@@ -49,7 +49,7 @@ void AisStreamReader::Update(time_t limitUnixTime) {
     lastUpdatedUnixTime = limitUnixTime;
 }
 
-const deque<AisUtil::ShipInfo>& AisStreamReader::GetCurrentWindow(void) {
+const vector<AisUtil::ShipInfo>& AisStreamReader::GetCurrentWindow(void) {
     return currentShipInfo;
 }
 
