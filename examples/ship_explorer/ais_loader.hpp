@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <ctime>
 #include "json.hpp"
+#include "ais_util.hpp"
 
 class AisLoader {
 public:
@@ -17,8 +18,7 @@ public:
     typedef struct {
         std::time_t unixTime;
         std::string shipName;
-        double latitude;
-        double longitude;
+        AisUtil::GeoCoords geoPos;
     } ShipInfo;
     const std::vector<ShipInfo>& GetLoadedShipInfo(void);
     static void PrintShipInfo(ShipInfo& shipInfo);

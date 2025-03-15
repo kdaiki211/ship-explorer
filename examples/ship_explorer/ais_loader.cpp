@@ -69,7 +69,6 @@ json AisLoader::parseLine(string line) {
 AisLoader::ShipInfo AisLoader::parseJson(nlohmann::json jsonData) {
     try {
         const string msgType = jsonData["MessageType"];
-        // const json msg       = jsonData["Message"];
         const json metaData  = jsonData["MetaData"];
         if (msgType == "PositionReport") {
             // parse time_utc
@@ -80,12 +79,11 @@ AisLoader::ShipInfo AisLoader::parseJson(nlohmann::json jsonData) {
 
             // fill ShipInfo
             ShipInfo shipInfo;
-            shipInfo.unixTime   = mktime(&tm);
-            shipInfo.shipName   = metaData["ShipName"];
-            shipInfo.latitude   = metaData["latitude"];
-            shipInfo.longitude  = metaData["longitude"];
+            shipInfo.unixTime          = mktime(&tm);
+            shipInfo.shipName          = metaData["ShipName"];
+            shipInfo.geoPos.latitude   = metaData["latitude"];
+            shipInfo.geoPos.longitude  = metaData["longitude"];
 
-            // cout << put_time(&tm, "%Y-%m-%d %H:%M:%S") << " " << shipInfo.shipName << ": " << shipInfo.latitude << "," << shipInfo.longitude << endl;
             return shipInfo;
         } else {
             throw AisPositionReportNotFoundException();
@@ -101,9 +99,15 @@ bool AisLoader::IsLoaded(void) {
 }
 
 void AisLoader::PrintShipInfo(ShipInfo& shipInfo) {
-    // tm *tm = gmtime(shipInfo.unixTime);
-    tm *tm = localtime(&shipInfo.unixTime);
-    cout << put_time(tm, "%Y-%m-%d %H:%M:%S") << " " << shipInfo.shipName << ", (" << shipInfo.latitude << "," << shipInfo.longitude << ")" << endl;
+    tm tm;
+    localtime_r(&shipInfo.unixTime, &tm);
+
+    // convert UTC to JST considering carry up
+    tm.tm_hour += 9;
+    auto unixTime = mktime(&tm);
+    localtime_r(&unixTime, &tm);
+
+    cout << put_time(&tm, "%Y-%m-%d %H:%M:%S") << " " << shipInfo.shipName << ", (" << shipInfo.geoPos.latitude << "," << shipInfo.geoPos.longitude << ")" << endl;
 }
 
 size_t AisLoader::GetLoadedEntryCount(void) {
