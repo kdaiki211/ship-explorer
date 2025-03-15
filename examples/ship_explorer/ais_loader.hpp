@@ -20,7 +20,7 @@ public:
         double latitude;
         double longitude;
     } ShipInfo;
-    std::vector<ShipInfo> GetLoadedShipInfo(void);
+    const std::vector<ShipInfo>& GetLoadedShipInfo(void);
     static void PrintShipInfo(ShipInfo& shipInfo);
 
 private:

@@ -8,10 +8,10 @@
 
 class AisStreamReader {
 public:
-    AisStreamReader(std::vector<AisLoader::ShipInfo> shipInfo);
+    AisStreamReader(const std::vector<AisLoader::ShipInfo>& shipInfo);
     ~AisStreamReader();
     void Update(std::time_t limitUnixTime);
-    std::deque<AisLoader::ShipInfo> GetCurrentWindow(void);
+    const std::deque<AisLoader::ShipInfo>& GetCurrentWindow(void);
     void PrintCurrentWindow(void);
 private:
     std::vector<AisLoader::ShipInfo> originalShipInfo;

@@ -2,11 +2,10 @@
 #include "ais_stream_reader.hpp"
 using namespace std;
 
-AisStreamReader::AisStreamReader(std::vector<AisLoader::ShipInfo> shipInfo) {
+AisStreamReader::AisStreamReader(const vector<AisLoader::ShipInfo>& shipInfo) : originalShipInfo(shipInfo) {
     cursor = 0;
     lastUpdatedUnixTime = 0;
     timeWindowSize = 60;
-    originalShipInfo = shipInfo;
 }
 
 AisStreamReader::~AisStreamReader() {
@@ -50,7 +49,7 @@ void AisStreamReader::Update(time_t limitUnixTime) {
     lastUpdatedUnixTime = limitUnixTime;
 }
 
-deque<AisLoader::ShipInfo> AisStreamReader::GetCurrentWindow(void) {
+const deque<AisLoader::ShipInfo>& AisStreamReader::GetCurrentWindow(void) {
     return currentShipInfo;
 }
 

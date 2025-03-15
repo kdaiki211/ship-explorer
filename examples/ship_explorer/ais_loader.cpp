@@ -110,6 +110,6 @@ size_t AisLoader::GetLoadedEntryCount(void) {
     return shipInfo.size();
 }
 
-vector<AisLoader::ShipInfo> AisLoader::GetLoadedShipInfo(void) {
+const vector<AisLoader::ShipInfo>& AisLoader::GetLoadedShipInfo(void) {
     return shipInfo;
 }
