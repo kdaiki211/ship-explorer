@@ -200,10 +200,30 @@ int main( int argc, char** argv )
 		asr.PrintCurrentWindowSummary(&ss);
 		auto dbgInfo = ss.str();
 
+		// draw debug info
+		cudaFont* font = cudaFont::Create(adaptFontSize(w)); assert(font);
+		auto format = IMAGE_RGB8;
+		assert(font);
+		if (overlayFlags & detectNet::OVERLAY_DEBUG_INFO) {
+			float4 color = make_float4(0,0,255,255);
+
+			// timestamp
+			if (timestampInSec >= 0) {
+				char tsStr[8];
+				const int2 tsPos = make_int2(10, 10);
+				sprintf(tsStr, "%d", timestampInSec);
+				font->OverlayText(image, format, w, h, tsStr, tsPos.x, tsPos.y, color);
+			}
+
+			// debug info
+			const int2 diPos = make_int2(w / 3, 10);
+			font->OverlayText(image, format, w, h, dbgInfo.c_str(), diPos.x, diPos.y, color);
+		}
+
 		// detect objects in the frame
 		detectNet::Detection* detections = NULL;
 	
-		const int numDetections = net->Detect(image, w, h, &detections, overlayFlags, timestampInSec, &dbgInfo);
+		const int numDetections = net->Detect(image, w, h, &detections, overlayFlags);
 		
 		if( numDetections > 0 )
 		{
@@ -218,8 +238,6 @@ int main( int argc, char** argv )
 			// draw ship candidate position
 			auto shipInfo  = mapper.GetLocalShipInfo();
 			auto scrCoords = mapper.GetLocalShipScreenCoords();
-			cudaFont* font = cudaFont::Create(adaptFontSize(w)); assert(font);
-			auto format = IMAGE_RGB8;
 			int shipIdx = 0;
 			for (int i = 0; i < shipInfo.size(); i++) {
 				auto elm = scrCoords[i];

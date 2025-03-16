@@ -456,14 +456,14 @@ bool detectNet::loadClassColors( const char* filename )
 
 
 // Detect
-int detectNet::Detect( float* input, uint32_t width, uint32_t height, Detection** detections, uint32_t overlay, int timestamp, std::string* debugInfo )
+int detectNet::Detect( float* input, uint32_t width, uint32_t height, Detection** detections, uint32_t overlay )
 {
-	return Detect((void*)input, width, height, IMAGE_RGBA32F, detections, overlay, timestamp, debugInfo);
+	return Detect((void*)input, width, height, IMAGE_RGBA32F, detections, overlay);
 }
 
 
 // Detect
-int detectNet::Detect( void* input, uint32_t width, uint32_t height, imageFormat format, Detection** detections, uint32_t overlay, int timestamp, std::string* debugInfo )
+int detectNet::Detect( void* input, uint32_t width, uint32_t height, imageFormat format, Detection** detections, uint32_t overlay )
 {
 	Detection* det = mDetectionSets + mDetectionSet * GetMaxDetections();
 
@@ -475,19 +475,19 @@ int detectNet::Detect( void* input, uint32_t width, uint32_t height, imageFormat
 	if( mDetectionSet >= mNumDetectionSets )
 		mDetectionSet = 0;
 	
-	return Detect(input, width, height, format, det, overlay, timestamp, debugInfo);
+	return Detect(input, width, height, format, det, overlay);
 }
 
 
 // Detect
-int detectNet::Detect( float* input, uint32_t width, uint32_t height, Detection* detections, uint32_t overlay, int timestamp, std::string* debugInfo )
+int detectNet::Detect( float* input, uint32_t width, uint32_t height, Detection* detections, uint32_t overlay )
 {
-	return Detect((void*)input, width, height, IMAGE_RGBA32F, detections, overlay, timestamp, debugInfo);
+	return Detect((void*)input, width, height, IMAGE_RGBA32F, detections, overlay);
 }
 
 
 // Detect
-int detectNet::Detect( void* input, uint32_t width, uint32_t height, imageFormat format, Detection* detections, uint32_t overlay, int timestamp, std::string* debugInfo )
+int detectNet::Detect( void* input, uint32_t width, uint32_t height, imageFormat format, Detection* detections, uint32_t overlay )
 {
 	// verify parameters
 	if( !input || width == 0 || height == 0 || !detections )
@@ -526,7 +526,7 @@ int detectNet::Detect( void* input, uint32_t width, uint32_t height, imageFormat
 	// render the overlay
 	if( overlay != 0 && numDetections > 0 )
 	{
-		if( !Overlay(input, input, width, height, format, detections, numDetections, overlay, timestamp, debugInfo) )
+		if( !Overlay(input, input, width, height, format, detections, numDetections, overlay) )
 			LogError(LOG_TRT "detectNet::Detect() -- failed to render overlay\n");
 	}
 	
@@ -969,7 +969,7 @@ void detectNet::sortDetections( Detection* detections, int numDetections )
 cudaError_t cudaDetectionOverlay( void* input, void* output, uint32_t width, uint32_t height, imageFormat format, detectNet::Detection* detections, int numDetections, float4* colors );
 
 // Overlay
-bool detectNet::Overlay( void* input, void* output, uint32_t width, uint32_t height, imageFormat format, Detection* detections, uint32_t numDetections, uint32_t flags, int timestamp, std::string* debugInfo )
+bool detectNet::Overlay( void* input, void* output, uint32_t width, uint32_t height, imageFormat format, Detection* detections, uint32_t numDetections, uint32_t flags )
 {
 	PROFILER_BEGIN(PROFILER_VISUALIZE);
 
@@ -1036,25 +1036,6 @@ bool detectNet::Overlay( void* input, void* output, uint32_t width, uint32_t hei
 			}
 		}
 
-		// draw timestamp
-		if (flags & OVERLAY_DEBUG_INFO) {
-			float4 color = make_float4(0,0,255,255);
-
-			// timestamp
-			if (timestamp >= 0) {
-				char tsStr[8];
-				const int2 tsPos = make_int2(10, 10);
-				sprintf(tsStr, "%d", timestamp);
-				font->OverlayText(output, format, width, height, tsStr, tsPos.x, tsPos.y, color);
-			}
-
-			// debug info
-			if (debugInfo) {
-				const int2 siPos = make_int2(width / 3, 10);
-				font->OverlayText(output, format, width, height, debugInfo->c_str(), siPos.x, siPos.y, color);
-			}
-		}
-			
 		// draw each object's description
 	#ifdef BATCH_TEXT
 		std::vector<std::pair<std::string, int2>> labels;
