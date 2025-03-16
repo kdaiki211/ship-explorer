@@ -22,6 +22,7 @@
 			"args": [
 				"-C", "build",
 				"-j2",
+				"CFLAGS=-g",
 				"ship_explorer"
 			],
 			"group": {
