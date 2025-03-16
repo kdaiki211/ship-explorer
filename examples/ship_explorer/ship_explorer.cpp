@@ -108,6 +108,9 @@ int main( int argc, char** argv )
 	sscanf(currentLocationStr, "%lf,%lf", &currentLocation.latitude, &currentLocation.longitude);
 	sscanf(lookAtStr,          "%lf,%lf", &lookAt.latitude,          &lookAt.longitude);
 
+	/*
+	 * prepare AisStreamReader and AisBboxMapper
+	 */
 	assert(aisLoader.IsLoaded());
 	AisStreamReader asr(aisLoader.GetLoadedShipInfo());
 	LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
@@ -196,6 +199,11 @@ int main( int argc, char** argv )
 		if( numDetections > 0 )
 		{
 			LogVerbose("%i ship(s) detected\n", numDetections);
+
+			auto shipNameList = mapper.SearchForShipName(detections, numDetections, input->GetWidth(), input->GetHeight());
+			for (auto shipName : shipNameList) {
+				std::cout << "[" << shipName << "]" << std::endl;
+			}
 		
 			for( int n=0; n < numDetections; n++ )
 			{
@@ -223,7 +231,7 @@ int main( int argc, char** argv )
 		}
 
 		// print out timing info
-		net->PrintProfilerTimes();
+		// net->PrintProfilerTimes();
 	}
 	
 
