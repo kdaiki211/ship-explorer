@@ -1020,7 +1020,7 @@ bool detectNet::Overlay( void* input, void* output, uint32_t width, uint32_t hei
 	}
 
 	// class label overlay
-	if ((flags & OVERLAY_LABEL) || (flags & OVERLAY_CONFIDENCE) || (flags & OVERLAY_TRACKING) || (flags & OVERLAY_DEBUG_INFO))
+	if ((flags & OVERLAY_LABEL) || (flags & OVERLAY_CONFIDENCE) || (flags & OVERLAY_TRACKING))
 	{
 		static cudaFont* font = NULL;
 
