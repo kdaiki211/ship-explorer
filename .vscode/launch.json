@@ -20,6 +20,7 @@
                      "--tracker-overlap=0.7",
                      "--overlay=box,shipname,track,debuginfo",
                      "--ais-ndjson=examples/ship_explorer/ais_log_20250308_152449.ndjson",
+                     "--input-timestamp-utc=2025-03-08 23:16:33",
                      "/home/nvidia/jetson-inference/data/IMG_8071.MOV", // input
                      "rtp://192.168.101.96:1234" // output
                     ],

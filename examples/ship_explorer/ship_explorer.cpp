@@ -31,6 +31,7 @@
 #include "ais_bbox_mapper.hpp"
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <signal.h>
 #include <cassert>
@@ -87,14 +88,17 @@ int main( int argc, char** argv )
 		aisLoader = AisLoader(std::string(aisNdjsonFilename));
 	}
 
+	/*
+	 * read the timestamp of the input video
+	 */
+	auto tsUtcStr = cmdLine.GetString("input-timestamp-utc");
+	tm originTm = {};
+	if (tsUtcStr) {
+		std::istringstream ss(tsUtcStr);
+		ss >> std::get_time(&originTm, "%Y-%m-%d %H:%M:%S");
+	}
+
 #if 1
-	tm baseTm = {};
-	baseTm.tm_year = 2025 - 1900;
-	baseTm.tm_mon  = 3 - 1;
-	baseTm.tm_mday = 8;
-	baseTm.tm_hour = 23;
-	baseTm.tm_min  = 16;
-	baseTm.tm_sec  = 33;
 	assert(aisLoader.IsLoaded());
 	AisStreamReader asr(aisLoader.GetLoadedShipInfo());
 	LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
@@ -172,7 +176,7 @@ int main( int argc, char** argv )
 		const int timestampInSec = input->GetFrameCount() / input->GetFrameRate();
 
 		// update time window
-		tm tm = baseTm;
+		tm tm = originTm;
 		AisUtil::AddSeconds(tm, timestampInSec);
 		asr.Update(mktime(&tm));
 		mapper.UpdateLocalShipInfo(asr.GetCurrentWindow());
