@@ -191,8 +191,9 @@ int main( int argc, char** argv )
 		// update time window
 		tm tm = originTm;
 		AisUtil::AddSeconds(tm, timestampInSec);
-		asr.Update(mktime(&tm));
-		mapper.UpdateLocalShipInfo(asr.GetCurrentWindow(), w, h);
+		auto unixTime = mktime(&tm);
+		asr.Update(unixTime);
+		mapper.UpdateLocalShipInfo(unixTime, asr.GetCurrentWindow(), w, h);
 
 		// prepare debug info
 		std::stringstream ss;
@@ -235,6 +236,15 @@ int main( int argc, char** argv )
 			
 				if( detections[n].TrackID >= 0 ) // is this a tracked object?
 					LogVerbose("tracking  ID %i  status=%i  frames=%i  lost=%i\n", detections[n].TrackID, detections[n].TrackStatus, detections[n].TrackFrames, detections[n].TrackLost);
+
+				if (overlayFlags & detectNet::OVERLAY_SHIPNAME) {
+					std::string txt = "unknown";
+					auto color = make_float4(255.0f, 255.0f, 255.0f, 255.0f);
+					if (n < shipNameList.size()) {
+						txt = shipNameList[n];
+					}
+					font->OverlayText(image, format, w, h, txt.c_str(), detections[n].Left, detections[n].Top, color);
+				}
 			}
 		}	
 
