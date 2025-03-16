@@ -26,8 +26,9 @@ void AisBboxMapper::UpdateLocalShipInfo(const vector<AisUtil::ShipInfo>& shipInf
         localShipInfo.push_back(tmp);
 
         // calculate screen coords
-        auto newX = float(it->geoPos.longitude * double(width));
-        auto newY = float(it->geoPos.latitude  * double(height));
+        auto scale = 10.0f;
+        auto newX = width / 2 + scale * float(tmp.geoPos.longitude * double(width));
+        auto newY = height - scale * float(tmp.geoPos.latitude  * double(height));
         localShipScreenCoords.push_back({ newX, newY });
     }
 }
@@ -122,4 +123,12 @@ void AisBboxMapper::PrintCurrentLocalShipInfoSummary(stringstream* ss) {
     for (auto it = localShipInfo.begin(); it != localShipInfo.end(); it++) {
         AisUtil::PrintShipInfoSummary(*it, ss);
     }
+}
+
+const std::vector<AisUtil::ShipInfo>& AisBboxMapper::GetLocalShipInfo(void) {
+    return localShipInfo;
+}
+
+const vector<AisUtil::ScreenCoords>& AisBboxMapper::GetLocalShipScreenCoords(void) {
+    return localShipScreenCoords;
 }

@@ -13,6 +13,8 @@ public:
     std::vector<std::string> SearchForShipName(detectNet::Detection* detections, int numDetections);
     void PrintCurrentLocalShipInfo(std::stringstream* ss=nullptr);
     void PrintCurrentLocalShipInfoSummary(std::stringstream* ss=nullptr);
+    const std::vector<AisUtil::ShipInfo>& GetLocalShipInfo(void);
+    const std::vector<AisUtil::ScreenCoords>& GetLocalShipScreenCoords(void);
 private:
     AisUtil::GeoCoords currentLocation;
     AisUtil::GeoCoords lookAt;

@@ -25,6 +25,9 @@
 
 #include "detectNet.h"
 #include "objectTracker.h"
+#include "cudaDraw.h"
+#include "cudaMath.h"
+#include "cudaFont.h"
 
 #include "ais_loader.hpp"
 #include "ais_stream_reader.hpp"
@@ -33,6 +36,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <vector>
 #include <signal.h>
 #include <cassert>
 
@@ -167,6 +171,8 @@ int main( int argc, char** argv )
 	/*
 	 * processing loop
 	 */
+	auto w = input->GetWidth();
+	auto h = input->GetHeight();
 	while( !signal_recieved )
 	{
 		// capture next image
@@ -186,7 +192,7 @@ int main( int argc, char** argv )
 		tm tm = originTm;
 		AisUtil::AddSeconds(tm, timestampInSec);
 		asr.Update(mktime(&tm));
-		mapper.UpdateLocalShipInfo(asr.GetCurrentWindow(), input->GetWidth(), input->GetHeight());
+		mapper.UpdateLocalShipInfo(asr.GetCurrentWindow(), w, h);
 
 		// prepare debug info
 		std::stringstream ss;
@@ -196,7 +202,7 @@ int main( int argc, char** argv )
 		// detect objects in the frame
 		detectNet::Detection* detections = NULL;
 	
-		const int numDetections = net->Detect(image, input->GetWidth(), input->GetHeight(), &detections, overlayFlags, timestampInSec, &dbgInfo);
+		const int numDetections = net->Detect(image, w, h, &detections, overlayFlags, timestampInSec, &dbgInfo);
 		
 		if( numDetections > 0 )
 		{
@@ -207,6 +213,20 @@ int main( int argc, char** argv )
 				std::cout << "[" << shipName << "]" << std::endl;
 			}
 			std::cout << "---" << std::endl;
+
+			// draw ship candidate position
+			auto shipInfo  = mapper.GetLocalShipInfo();
+			auto scrCoords = mapper.GetLocalShipScreenCoords();
+			cudaFont* font = cudaFont::Create(adaptFontSize(w)); assert(font);
+			auto format = IMAGE_RGB8;
+			int shipIdx = 0;
+			for (int i = 0; i < shipInfo.size(); i++) {
+				auto elm = scrCoords[i];
+				auto color = make_float4(0, 0, 0, 175.0f);
+				auto r = 5.0f;
+				CUDA(cudaDrawCircle(image, w, h, format, elm.x, elm.y, r, color));
+				font->OverlayText(image, format, w, h, shipInfo[i].shipName.c_str(), elm.x + r + 1.0f, elm.y, color);
+			}
 		
 			for( int n=0; n < numDetections; n++ )
 			{
