@@ -98,18 +98,20 @@ int main( int argc, char** argv )
 		ss >> std::get_time(&originTm, "%Y-%m-%d %H:%M:%S");
 	}
 
-#if 1
+	/*
+	 * read latitude and longitude
+	 */
+	auto currentLocationStr = cmdLine.GetString("geo-current-location");
+	auto lookAtStr          = cmdLine.GetString("geo-look-at");
+	AisUtil::GeoCoords currentLocation;
+	AisUtil::GeoCoords lookAt;
+	sscanf(currentLocationStr, "%lf,%lf", &currentLocation.latitude, &currentLocation.longitude);
+	sscanf(lookAtStr,          "%lf,%lf", &lookAt.latitude,          &lookAt.longitude);
+
 	assert(aisLoader.IsLoaded());
 	AisStreamReader asr(aisLoader.GetLoadedShipInfo());
 	LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
-
-	AisUtil::GeoCoords currentLocation = { 35.645812212748325, 139.75011314898728 }; // msb Tamachi, Tamachi Station Tower N
-	AisUtil::GeoCoords lookAt          = { 35.617081491541065, 139.76952237971688 };
 	AisBboxMapper mapper(currentLocation, lookAt);
-
-	// std::cout << "bye" << std::endl;
-	// return 0;
-#endif
 
 	/*
 	 * attach signal handler
