@@ -31,6 +31,7 @@
 #include "ais_bbox_mapper.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <signal.h>
 #include <cassert>
 
@@ -87,18 +88,16 @@ int main( int argc, char** argv )
 	}
 
 #if 1
-	tm tm = {};
-	tm.tm_year = 2025 - 1900;
-	tm.tm_mon  = 3 - 1;
-	tm.tm_mday = 12;
-	tm.tm_hour = 3;
-	tm.tm_min  = 45;
-	tm.tm_sec  = 0;
+	tm baseTm = {};
+	baseTm.tm_year = 2025 - 1900;
+	baseTm.tm_mon  = 3 - 1;
+	baseTm.tm_mday = 8;
+	baseTm.tm_hour = 23;
+	baseTm.tm_min  = 16;
+	baseTm.tm_sec  = 33;
 	assert(aisLoader.IsLoaded());
 	AisStreamReader asr(aisLoader.GetLoadedShipInfo());
 	LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
-
-	asr.Update(mktime(&tm));
 
 	AisUtil::GeoCoords currentLocation = { 35.645812212748325, 139.75011314898728 }; // msb Tamachi, Tamachi Station Tower N
 	AisUtil::GeoCoords lookAt          = { 35.617081491541065, 139.76952237971688 };
@@ -170,17 +169,23 @@ int main( int argc, char** argv )
 			
 			break; // EOS
 		}
-		// const int timestampInSec = input->GetLastTimestamp() / 1000 / 1000 / 1000; // don't use this: GetLastTimestamp() will be cleared to 0 when gstreamer failed to retrieve next image buffer
 		const int timestampInSec = input->GetFrameCount() / input->GetFrameRate();
-		LogVerbose("<<< timestampInSec = %d >>>\n", timestampInSec);
-		tm.tm_sec = timestampInSec;
+
+		// update time window
+		tm tm = baseTm;
+		AisUtil::AddSeconds(tm, timestampInSec);
 		asr.Update(mktime(&tm));
-		asr.PrintCurrentWindow();
+		mapper.UpdateLocalShipInfo(asr.GetCurrentWindow());
+
+		// prepare debug info
+		std::stringstream ss;
+		asr.PrintCurrentWindowSummary(&ss);
+		auto dbgInfo = ss.str();
 
 		// detect objects in the frame
 		detectNet::Detection* detections = NULL;
 	
-		const int numDetections = net->Detect(image, input->GetWidth(), input->GetHeight(), &detections, overlayFlags);
+		const int numDetections = net->Detect(image, input->GetWidth(), input->GetHeight(), &detections, overlayFlags, timestampInSec, &dbgInfo);
 		
 		if( numDetections > 0 )
 		{

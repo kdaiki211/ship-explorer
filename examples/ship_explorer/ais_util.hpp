@@ -1,5 +1,6 @@
 #pragma once
 #include <iomanip>
+#include <sstream>
 #include <cstdint>
 
 class AisUtil {
@@ -20,7 +21,10 @@ public:
         float cog;        // course over ground [degree]
         float sog;        // speed over ground [knot]
     } ShipInfo;
-    static void PrintShipInfo(ShipInfo& shipInfo);
+    static void PrintShipInfo(ShipInfo& shipInfo, std::stringstream* ss=nullptr);
+    static void PrintShipInfoSummary(ShipInfo& shipInfo, std::stringstream* ss=nullptr);
+    static void NormalizeTm(std::tm& tm);
     static void NormalizeDegree(float& degree);
     static void NormalizeRadian(double& rad);
+    static void AddSeconds(std::tm& tm, int seconds);
 };

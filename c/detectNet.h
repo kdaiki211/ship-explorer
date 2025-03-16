@@ -210,6 +210,7 @@ public:
 		OVERLAY_TRACKING   = (1 << 3),	/**< Overlay tracking information (like track ID) */
 		OVERLAY_LINES      = (1 << 4),     /**< Overlay the bounding box lines (unfilled) */
 		OVERLAY_SHIPNAME   = (1 << 5),  /**< Overlay the ship name labels */
+		OVERLAY_DEBUG_INFO   = (1 << 6),  /**< Overlay the timestamp */
 		OVERLAY_DEFAULT    = OVERLAY_BOX|OVERLAY_LABEL|OVERLAY_CONFIDENCE, /**< The default choice of overlay */
 	};
 
@@ -322,7 +323,7 @@ public:
 	 * @param[in]  overlay bitwise OR combination of overlay flags (@see OverlayFlags and @see Overlay()), or OVERLAY_NONE.
 	 * @returns    The number of detected objects, 0 if there were no detected objects, and -1 if an error was encountered.
 	 */
-	template<typename T> int Detect( T* image, uint32_t width, uint32_t height, Detection** detections, uint32_t overlay=OVERLAY_DEFAULT )		{ return Detect((void*)image, width, height, imageFormatFromType<T>(), detections, overlay); }
+	template<typename T> int Detect( T* image, uint32_t width, uint32_t height, Detection** detections, uint32_t overlay=OVERLAY_DEFAULT, int timestamp=-1, std::string* debugInfo=nullptr )		{ return Detect((void*)image, width, height, imageFormatFromType<T>(), detections, overlay, debugInfo); }
 	
 	/**
 	 * Detect object locations in an image, into an array of the results allocated by the user.
@@ -334,7 +335,7 @@ public:
 	 * @param[in]  overlay bitwise OR combination of overlay flags (@see OverlayFlags and @see Overlay()), or OVERLAY_NONE.
 	 * @returns    The number of detected objects, 0 if there were no detected objects, and -1 if an error was encountered.
 	 */
-	template<typename T> int Detect( T* image, uint32_t width, uint32_t height, Detection* detections, uint32_t overlay=OVERLAY_DEFAULT )		{ return Detect((void*)image, width, height, imageFormatFromType<T>(), detections, overlay); }
+	template<typename T> int Detect( T* image, uint32_t width, uint32_t height, Detection* detections, uint32_t overlay=OVERLAY_DEFAULT, int timestamp=-1, std::string* debugInfo=nullptr )		{ return Detect((void*)image, width, height, imageFormatFromType<T>(), detections, overlay, debugInfo); }
 	
 	/**
 	 * Detect object locations from an image, returning an array containing the detection results.
@@ -345,7 +346,7 @@ public:
 	 * @param[in]  overlay bitwise OR combination of overlay flags (@see OverlayFlags and @see Overlay()), or OVERLAY_NONE.
 	 * @returns    The number of detected objects, 0 if there were no detected objects, and -1 if an error was encountered.
 	 */
-	int Detect( void* input, uint32_t width, uint32_t height, imageFormat format, Detection** detections, uint32_t overlay=OVERLAY_DEFAULT );
+	int Detect( void* input, uint32_t width, uint32_t height, imageFormat format, Detection** detections, uint32_t overlay=OVERLAY_DEFAULT, int timestamp=-1, std::string* debugInfo=nullptr );
 
 	/**
 	 * Detect object locations from an image, into an array of the results allocated by the user.
@@ -357,7 +358,7 @@ public:
 	 * @param[in]  overlay bitwise OR combination of overlay flags (@see OverlayFlags and @see Overlay()), or OVERLAY_NONE.
 	 * @returns    The number of detected objects, 0 if there were no detected objects, and -1 if an error was encountered.
 	 */
-	int Detect( void* input, uint32_t width, uint32_t height, imageFormat format, Detection* detections, uint32_t overlay=OVERLAY_DEFAULT );
+	int Detect( void* input, uint32_t width, uint32_t height, imageFormat format, Detection* detections, uint32_t overlay=OVERLAY_DEFAULT, int timestamp=-1, std::string* debugInfo=nullptr );
 	
 	/**
 	 * Detect object locations from an RGBA image, returning an array containing the detection results.
@@ -369,7 +370,7 @@ public:
 	 * @param[in]  overlay bitwise OR combination of overlay flags (@see OverlayFlags and @see Overlay()), or OVERLAY_NONE.
 	 * @returns    The number of detected objects, 0 if there were no detected objects, and -1 if an error was encountered.
 	 */
-	int Detect( float* input, uint32_t width, uint32_t height, Detection** detections, uint32_t overlay=OVERLAY_DEFAULT );
+	int Detect( float* input, uint32_t width, uint32_t height, Detection** detections, uint32_t overlay=OVERLAY_DEFAULT, int timestamp=-1, std::string* debugInfo=nullptr );
 
 	/**
 	 * Detect object locations in an RGBA image, into an array of the results allocated by the user.
@@ -382,7 +383,7 @@ public:
 	 * @param[in]  overlay bitwise OR combination of overlay flags (@see OverlayFlags and @see Overlay()), or OVERLAY_NONE.
 	 * @returns    The number of detected objects, 0 if there were no detected objects, and -1 if an error was encountered.
 	 */
-	int Detect( float* input, uint32_t width, uint32_t height, Detection* detections, uint32_t overlay=OVERLAY_DEFAULT );
+	int Detect( float* input, uint32_t width, uint32_t height, Detection* detections, uint32_t overlay=OVERLAY_DEFAULT, int timestamp=-1, std::string* debugInfo=nullptr );
 	
 	/**
 	 * Draw the detected bounding boxes overlayed on an RGBA image.
@@ -391,7 +392,7 @@ public:
 	 * @param output output image in CUDA device memory.
 	 * @param detections Array of detections allocated in CUDA device memory.
 	 */
-	template<typename T> bool Overlay( T* input, T* output, uint32_t width, uint32_t height, Detection* detections, uint32_t numDetections, uint32_t flags=OVERLAY_DEFAULT )			{ return Overlay(input, output, width, height, imageFormatFromType<T>(), detections, numDetections, flags); }
+	template<typename T> bool Overlay( T* input, T* output, uint32_t width, uint32_t height, Detection* detections, uint32_t numDetections, uint32_t flags=OVERLAY_DEFAULT, int timestamp=-1, std::string* debugInfo=nullptr )			{ return Overlay(input, output, width, height, imageFormatFromType<T>(), detections, numDetections, flags, timestamp, debugInfo); }
 	
 	/**
 	 * Draw the detected bounding boxes overlayed on an RGBA image.
@@ -400,7 +401,7 @@ public:
 	 * @param output output image in CUDA device memory.
 	 * @param detections Array of detections allocated in CUDA device memory.
 	 */
-	bool Overlay( void* input, void* output, uint32_t width, uint32_t height, imageFormat format, Detection* detections, uint32_t numDetections, uint32_t flags=OVERLAY_DEFAULT );
+	bool Overlay( void* input, void* output, uint32_t width, uint32_t height, imageFormat format, Detection* detections, uint32_t numDetections, uint32_t flags=OVERLAY_DEFAULT, int timestamp=-1, std::string* debugInfo=nullptr );
 	
 	/**
 	 * Retrieve the minimum threshold for detection.

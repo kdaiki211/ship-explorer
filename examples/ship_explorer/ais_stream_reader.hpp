@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iomanip>
+#include <sstream>
 #include <ctime>
 #include "ais_util.hpp"
 #include "ais_loader.hpp"
@@ -12,7 +13,8 @@ public:
     ~AisStreamReader();
     void Update(std::time_t limitUnixTime);
     const std::vector<AisUtil::ShipInfo>& GetCurrentWindow(void);
-    void PrintCurrentWindow(void);
+    void PrintCurrentWindow(std::stringstream* ss=nullptr);
+    void PrintCurrentWindowSummary(std::stringstream* ss=nullptr);
 private:
     std::vector<AisUtil::ShipInfo> originalShipInfo;
     std::vector<AisUtil::ShipInfo> currentShipInfo;

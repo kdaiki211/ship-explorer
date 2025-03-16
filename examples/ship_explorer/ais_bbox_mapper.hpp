@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <sstream>
 #include "detectNet.h"
 #include "ais_util.hpp"
 
@@ -10,7 +11,8 @@ public:
     ~AisBboxMapper();
     void UpdateLocalShipInfo(const std::vector<AisUtil::ShipInfo>& shipInfoRef);
     std::vector<std::string> SearchForShipName(detectNet::Detection* detections, int numDetections);
-    void PrintCurrentLocalShipInfo(void);
+    void PrintCurrentLocalShipInfo(std::stringstream* ss=nullptr);
+    void PrintCurrentLocalShipInfoSummary(std::stringstream* ss=nullptr);
 private:
     AisUtil::GeoCoords currentLocation;
     AisUtil::GeoCoords lookAt;

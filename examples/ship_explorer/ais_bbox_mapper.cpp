@@ -56,8 +56,13 @@ AisUtil::ScreenCoords AisBboxMapper::calculateScreenCoords(AisUtil::GeoCoords ge
     auto offsetLongtitude = geoCoords.longitude - currentLocation.longitude;
 }
 
-void AisBboxMapper::PrintCurrentLocalShipInfo(void) {
+void AisBboxMapper::PrintCurrentLocalShipInfo(stringstream* ss) {
     for (auto it = localShipInfo.begin(); it != localShipInfo.end(); it++) {
-        AisUtil::PrintShipInfo(*it);
+        AisUtil::PrintShipInfo(*it, ss);
+    }
+}
+void AisBboxMapper::PrintCurrentLocalShipInfoSummary(stringstream* ss) {
+    for (auto it = localShipInfo.begin(); it != localShipInfo.end(); it++) {
+        AisUtil::PrintShipInfoSummary(*it, ss);
     }
 }
