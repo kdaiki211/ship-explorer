@@ -5,7 +5,7 @@ using namespace std;
 AisStreamReader::AisStreamReader(const vector<AisUtil::ShipInfo>& shipInfo) : originalShipInfo(shipInfo) {
     cursor = 0;
     lastUpdatedUnixTime = 0;
-    timeWindowSize = 60;
+    timeWindowSize = 60 * 3;
 }
 
 AisStreamReader::~AisStreamReader() {
