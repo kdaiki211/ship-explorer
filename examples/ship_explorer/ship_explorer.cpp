@@ -161,6 +161,8 @@ int main( int argc, char** argv )
 	// parse overlay flags
 	const uint32_t overlayFlags = detectNet::OverlayFlagsFromStr(cmdLine.GetString("overlay", "box,shipname"));
 	
+	// suppress logs
+	Log::SetLevel(Log::Level::ERROR);
 
 	/*
 	 * processing loop
@@ -184,7 +186,7 @@ int main( int argc, char** argv )
 		tm tm = originTm;
 		AisUtil::AddSeconds(tm, timestampInSec);
 		asr.Update(mktime(&tm));
-		mapper.UpdateLocalShipInfo(asr.GetCurrentWindow());
+		mapper.UpdateLocalShipInfo(asr.GetCurrentWindow(), input->GetWidth(), input->GetHeight());
 
 		// prepare debug info
 		std::stringstream ss;
@@ -200,10 +202,11 @@ int main( int argc, char** argv )
 		{
 			LogVerbose("%i ship(s) detected\n", numDetections);
 
-			auto shipNameList = mapper.SearchForShipName(detections, numDetections, input->GetWidth(), input->GetHeight());
+			auto shipNameList = mapper.SearchForShipName(detections, numDetections);
 			for (auto shipName : shipNameList) {
 				std::cout << "[" << shipName << "]" << std::endl;
 			}
+			std::cout << "---" << std::endl;
 		
 			for( int n=0; n < numDetections; n++ )
 			{

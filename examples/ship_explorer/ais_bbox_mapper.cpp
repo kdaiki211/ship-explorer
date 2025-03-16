@@ -13,39 +13,41 @@ AisBboxMapper::AisBboxMapper(AisUtil::GeoCoords currentLocation, AisUtil::GeoCoo
 AisBboxMapper::~AisBboxMapper() {
 }
 
-void AisBboxMapper::UpdateLocalShipInfo(const vector<AisUtil::ShipInfo>& shipInfoRef) {
+void AisBboxMapper::UpdateLocalShipInfo(const vector<AisUtil::ShipInfo>& shipInfoRef, uint32_t width, uint32_t height) {
     localShipInfo.clear();
+    localShipScreenCoords.clear();
     const double angle = M_PI_2 - cameraAngleInRadian;
     for (auto it = shipInfoRef.begin(); it != shipInfoRef.end(); it++) {
+        // rotate the point around currentLocation based on the camera's orientation
         AisUtil::ShipInfo tmp = *it;
         tmp.geoPos = affineGeoCoords(it->geoPos, currentLocation, angle);
         tmp.cog += float(double(360) * angle / (double(2) * M_PI));
         AisUtil::NormalizeDegree(tmp.cog);
         localShipInfo.push_back(tmp);
+
+        // calculate screen coords
+        auto newX = float(it->geoPos.longitude * double(width));
+        auto newY = float(it->geoPos.latitude  * double(height));
+        localShipScreenCoords.push_back({ newX, newY });
     }
 }
 
-vector<string> AisBboxMapper::SearchForShipName(detectNet::Detection* detections, int numDetections, uint32_t width, uint32_t height) {
-    vector<AisUtil::ScreenCoords> sDetections, sLocalShips;
+vector<string> AisBboxMapper::SearchForShipName(detectNet::Detection* detections, int numDetections) {
+    // convert bounding boxes to points
+    vector<AisUtil::ScreenCoords> sDetections;
     for (int i = 0; i < numDetections; i++) {
         auto detection = detections[i];
         auto newX = detection.Left + (detection.Right  - detection.Left) / 2;
         auto newY = detection.Top  + (detection.Bottom - detection.Top)  / 2;
         sDetections.push_back({ newX, newY });
     }
-    for (auto it = localShipInfo.begin(); it != localShipInfo.end(); it++) {
-        // convert (lati,longi) to (x,y)
-        auto newX = it->geoPos.longitude * double(width);
-        auto newY = it->geoPos.latitude  * double(height);
-        sLocalShips.push_back({ newX, newY });
-    }
 
     // calculate distance
     vector<tuple<double, int, int>> distance; // <distance, index of detections, index of localShipInfo>
     for (int i1 = 0; i1 < numDetections; i1++) {
-        for (int i2 = 0; i2 < localShipInfo.size(); i2++) {
+        for (int i2 = 0; i2 < localShipScreenCoords.size(); i2++) {
             auto pos1 = sDetections[i1];
-            auto pos2 = sLocalShips[i2];
+            auto pos2 = localShipScreenCoords[i2];
             auto d = pow(pos2.x - pos1.x, 2) + pow(pos2.y - pos1.y, 2);
             distance.push_back({ d, i1, i2 });
         }
