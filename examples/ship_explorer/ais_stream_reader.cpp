@@ -56,10 +56,12 @@ const vector<AisUtil::ShipInfo>& AisStreamReader::GetCurrentWindow(void) {
 void AisStreamReader::PrintCurrentWindow(stringstream* ss) {
     for (auto it = currentShipInfo.begin(); it != currentShipInfo.end(); it++) {
         AisUtil::PrintShipInfo(*it, ss);
+        *ss << endl;
     }
 }
 void AisStreamReader::PrintCurrentWindowSummary(stringstream* ss) {
     for (auto it = currentShipInfo.begin(); it != currentShipInfo.end(); it++) {
         AisUtil::PrintShipInfoSummary(*it, ss);
+        *ss << endl;
     }
 }

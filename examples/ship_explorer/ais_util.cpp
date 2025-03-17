@@ -16,7 +16,7 @@ void AisUtil::PrintShipInfo(AisUtil::ShipInfo& shipInfo, stringstream* ss) {
     if (ss != nullptr) {
         os = ss;
     }
-    *os << put_time(&tm, "%Y-%m-%d %H:%M:%S ") << "[" << shipInfo.mmsi << "] " << setw(20) << left << shipInfo.shipName << ", (" << shipInfo.geoPos.latitude << "," << shipInfo.geoPos.longitude << "), " << shipInfo.sog << " knots, " << shipInfo.cog << " degs" << endl;
+    *os << put_time(&tm, "%Y-%m-%d %H:%M:%S ") << "[" << shipInfo.mmsi << "] " << setw(20) << left << shipInfo.shipName << ", (" << shipInfo.geoPos.latitude << "," << shipInfo.geoPos.longitude << "), " << shipInfo.sog << " knots, " << shipInfo.cog << " degs";
 }
 
 void AisUtil::PrintShipInfoSummary(AisUtil::ShipInfo& shipInfo, stringstream* ss) {
@@ -31,7 +31,7 @@ void AisUtil::PrintShipInfoSummary(AisUtil::ShipInfo& shipInfo, stringstream* ss
     if (ss != nullptr) {
         os = ss;
     }
-    *os << put_time(&tm, "%H:%M:%S ") << setw(20) << left << shipInfo.shipName << " @ (" << shipInfo.geoPos.latitude << "," << shipInfo.geoPos.longitude << "), " << shipInfo.sog << " knots, " << shipInfo.cog << " degs" << endl;
+    *os << put_time(&tm, "%H:%M:%S ") << setw(20) << left << shipInfo.shipName << " @ (" << shipInfo.geoPos.latitude << "," << shipInfo.geoPos.longitude << "), " << shipInfo.sog << " knots, " << shipInfo.cog << " degs";
 }
 
 void AisUtil::NormalizeTm(tm& tm) {
@@ -62,4 +62,9 @@ void AisUtil::NormalizeRadian(double& rad) {
 void AisUtil::AddSeconds(tm& tm, int seconds) {
     auto unixTime = mktime(&tm) + seconds;
     localtime_r(&unixTime, &tm);
+}
+
+std::string AisUtil::RTrim(const std::string& str) {
+    size_t end = str.find_last_not_of(' ');
+    return (end == std::string::npos) ? "" : str.substr(0, end + 1);
 }

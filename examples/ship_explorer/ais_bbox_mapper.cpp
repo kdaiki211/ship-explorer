@@ -6,8 +6,31 @@
 #include "ais_bbox_mapper.hpp"
 using namespace std;
 
-AisBboxMapper::AisBboxMapper(AisUtil::GeoCoords currentLocation, AisUtil::GeoCoords lookAt)
-    : currentLocation(currentLocation), lookAt(lookAt), cameraAngleInRadian(calculateAngleInRadian(currentLocation, lookAt)) {
+AisBboxMapper::AisBboxMapper(AisUtil::GeoCoords currentLocation, AisUtil::GeoCoords lookAt, uint32_t screenW, uint32_t screenH)
+    : currentLocation(currentLocation), lookAt(lookAt), width(screenW), height(screenH) {
+
+    // calculate perspective transform matrix
+    AisUtil::GeoCoords srcGeoPoints[] = { // TODO: parameterize
+        { 35.592499, 139.790526 }, // a
+        { 35.586024, 139.784049 }, // b
+        { 35.633655, 139.759223 }, // c
+        { 35.625142, 139.767833 }, // d
+    };
+    cv::Point2f dstScreenPoints[] = { // TODO: parameterize
+        { 682,  364 }, // a
+        { 1672, 355 }, // b
+        { 733,  905 }, // c
+        { 217,  597 }, // d
+    };
+    perspectiveMatrix = calculatePerspectiveMatrix(srcGeoPoints, dstScreenPoints);
+
+    cout << "Perspective Transformation Matrix:" << endl;
+    for (int i = 0; i < perspectiveMatrix.rows; i++) {
+        for (int j = 0; j < perspectiveMatrix.cols; j++) {
+            cout << perspectiveMatrix.at<double>(i, j) << " ";
+        }
+        cout << endl;
+    }
 }
 
 AisBboxMapper::~AisBboxMapper() {
@@ -32,10 +55,9 @@ AisUtil::GeoCoords AisBboxMapper::predictCurrentPosition(AisUtil::GeoCoords pos,
     return { new_lat, new_lon };
 }
 
-void AisBboxMapper::UpdateLocalShipInfo(time_t unixTime, const vector<AisUtil::ShipInfo>& shipInfoRef, uint32_t width, uint32_t height) {
+void AisBboxMapper::UpdateLocalShipInfo(time_t unixTime, const vector<AisUtil::ShipInfo>& shipInfoRef) {
     localShipInfo.clear();
     localShipScreenCoords.clear();
-    const double angle = M_PI_2 - cameraAngleInRadian;
     for (auto it = shipInfoRef.begin(); it != shipInfoRef.end(); it++) {
         AisUtil::ShipInfo tmp = *it;
 
@@ -46,22 +68,29 @@ void AisBboxMapper::UpdateLocalShipInfo(time_t unixTime, const vector<AisUtil::S
             tmp.geoPos = predictCurrentPosition(tmp.geoPos, tmp.sog, tmp.cog, elapsed);
         }
 
-        // rotate the point around currentLocation based on the camera's orientation
-        tmp.geoPos = affineGeoCoords(tmp.geoPos, currentLocation, angle);
-        tmp.cog += float(double(360) * angle / (double(2) * M_PI));
-        AisUtil::NormalizeDegree(tmp.cog);
-
         localShipInfo.push_back(tmp);
-
-        // calculate screen coords (TODO: this implementation is low precision. we will use perspective transform in the future)
-        auto offsetX = 0;
-        auto offsetY = height * 0.20f;
-        auto scaleX = 25.0f;
-        auto scaleY = 10.0f;
-        auto newX = width / 2 + scaleX * float(tmp.geoPos.longitude * double(width)) + offsetX;
-        auto newY = height - scaleY * float(tmp.geoPos.latitude  * double(height)) - offsetY;
-        localShipScreenCoords.push_back({ newX, newY });
+        localShipScreenCoords.push_back(ConvertGeoCoordsToScreenCoords(tmp.geoPos));
     }
+}
+
+AisUtil::ScreenCoords AisBboxMapper::ConvertGeoCoordsToScreenCoords(AisUtil::GeoCoords& geoPos) {
+    // calculate screen coords using perspective matrix
+    cv::Mat p0 = cv::Mat::zeros(3, 1, CV_64F);
+    p0.at<double>(0, 0) = geoPos.longitude;
+    p0.at<double>(1, 0) = geoPos.latitude;
+    p0.at<double>(2, 0) = 1;
+    cv::Mat p1 = perspectiveMatrix * p0;
+    p1 /= p1.at<double>(2, 0);
+    return { float(p1.at<double>(0, 0)), float(p1.at<double>(1, 0)) };
+}
+
+cv::Mat AisBboxMapper::calculatePerspectiveMatrix(AisUtil::GeoCoords srcGeoPoints[], cv::Point2f dstScreenPoints[]) {
+    cv::Point2f srcScreenPoints[4];
+    for (int i = 0; i < 4; i++) {
+        auto tmp = srcGeoPoints[i];
+        srcScreenPoints[i] = { tmp.longitude, tmp.latitude }; // AisUtil::GeoCoords -> cv::Point2f
+    }
+    return cv::getPerspectiveTransform(srcScreenPoints, dstScreenPoints);
 }
 
 vector<string> AisBboxMapper::SearchForShipName(detectNet::Detection* detections, int numDetections) {
@@ -120,39 +149,17 @@ vector<string> AisBboxMapper::SearchForShipName(detectNet::Detection* detections
     return shipNameList;
 }
 
-double AisBboxMapper::calculateAngleInRadian(AisUtil::GeoCoords p0, AisUtil::GeoCoords p) {
-    double dx = p.longitude - p0.longitude;
-    double dy = p.latitude  - p0.latitude;
-    cout << "calculation of camera angle" << endl;
-    cout << "dx = " << dx << ", dy = " << dy << endl;
-    return atan2(dy, dx);
-}
-
-AisUtil::GeoCoords AisBboxMapper::affineGeoCoords(AisUtil::GeoCoords target, AisUtil::GeoCoords origin, double angle) {
-    // rotate geoCoords around origin
-    double cosVal = cos(angle);
-    double sinVal = sin(angle);
-    double dx = target.longitude - origin.longitude;
-    double dy = target.latitude  - origin.latitude;
-    double newX = dx * cosVal - dy * sinVal;
-    double newY = dx * sinVal + dy * cosVal;
-    return { newY, newX };
-}
-
-AisUtil::ScreenCoords AisBboxMapper::calculateScreenCoords(AisUtil::GeoCoords geoCoords) {
-    auto offsetLatitude   = geoCoords.latitude  - currentLocation.latitude;
-    auto offsetLongtitude = geoCoords.longitude - currentLocation.longitude;
-}
-
 void AisBboxMapper::PrintCurrentLocalShipInfo(stringstream* ss) {
-    for (auto it = localShipInfo.begin(); it != localShipInfo.end(); it++) {
-        AisUtil::PrintShipInfo(*it, ss);
+    for (int i = 0; i < localShipInfo.size(); i++) {
+        AisUtil::PrintShipInfo(localShipInfo[i], ss);
+        *ss << ", (" << localShipScreenCoords[i].x << "," << localShipScreenCoords[i].y << ")" << endl;
     }
 }
 
 void AisBboxMapper::PrintCurrentLocalShipInfoSummary(stringstream* ss) {
-    for (auto it = localShipInfo.begin(); it != localShipInfo.end(); it++) {
-        AisUtil::PrintShipInfoSummary(*it, ss);
+    for (int i = 0; i < localShipInfo.size(); i++) {
+        AisUtil::PrintShipInfoSummary(localShipInfo[i], ss);
+        *ss << ", (" << localShipScreenCoords[i].x << "," << localShipScreenCoords[i].y << ")" << endl;
     }
 }
 

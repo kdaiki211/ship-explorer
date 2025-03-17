@@ -113,14 +113,6 @@ int main( int argc, char** argv )
 	sscanf(lookAtStr,          "%lf,%lf", &lookAt.latitude,          &lookAt.longitude);
 
 	/*
-	 * prepare AisStreamReader and AisBboxMapper
-	 */
-	assert(aisLoader.IsLoaded());
-	AisStreamReader asr(aisLoader.GetLoadedShipInfo());
-	LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
-	AisBboxMapper mapper(currentLocation, lookAt);
-
-	/*
 	 * attach signal handler
 	 */
 	if( signal(SIGINT, sig_handler) == SIG_ERR )
@@ -137,6 +129,17 @@ int main( int argc, char** argv )
 		LogError("detectnet:  failed to create input stream\n");
 		return 1;
 	}
+	auto w = input->GetWidth();
+	auto h = input->GetHeight();
+
+
+	/*
+	 * prepare AisStreamReader and AisBboxMapper
+	 */
+	assert(aisLoader.IsLoaded());
+	AisStreamReader asr(aisLoader.GetLoadedShipInfo());
+	LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
+	AisBboxMapper mapper(currentLocation, lookAt, w, h);
 
 
 	/*
@@ -171,8 +174,6 @@ int main( int argc, char** argv )
 	/*
 	 * processing loop
 	 */
-	auto w = input->GetWidth();
-	auto h = input->GetHeight();
 	while( !signal_recieved )
 	{
 		// capture next image
@@ -193,11 +194,12 @@ int main( int argc, char** argv )
 		AisUtil::AddSeconds(tm, timestampInSec);
 		auto unixTime = mktime(&tm);
 		asr.Update(unixTime);
-		mapper.UpdateLocalShipInfo(unixTime, asr.GetCurrentWindow(), w, h);
+		mapper.UpdateLocalShipInfo(unixTime, asr.GetCurrentWindow());
 
 		// prepare debug info
 		std::stringstream ss;
-		asr.PrintCurrentWindowSummary(&ss);
+		// asr.PrintCurrentWindowSummary(&ss);
+		mapper.PrintCurrentLocalShipInfoSummary(&ss);
 		auto dbgInfo = ss.str();
 
 		// draw debug info
@@ -216,7 +218,7 @@ int main( int argc, char** argv )
 			}
 
 			// debug info
-			const int2 diPos = make_int2(w / 3, 10);
+			const int2 diPos = make_int2(w / 5, 10);
 			font->OverlayText(image, format, w, h, dbgInfo.c_str(), diPos.x, diPos.y, color);
 		}
 
@@ -240,12 +242,46 @@ int main( int argc, char** argv )
 			auto scrCoords = mapper.GetLocalShipScreenCoords();
 			int shipIdx = 0;
 			for (int i = 0; i < shipInfo.size(); i++) {
+				auto str = shipInfo[i].shipName.c_str();
 				auto elm = scrCoords[i];
+				elm.x = min(max(elm.x, -1), w);
+				elm.y = min(max(elm.y, -1), h);
+				auto ext = font->TextExtents(str, elm.x, elm.y);
+				auto pad = 5.0f;
+				auto ox = (ext.z >= w-1) ? (ext.z - (w-1) + pad) : -pad;
+				auto oy = (ext.w >= h-1) ? (ext.w - (h-1) + pad) : -pad;
 				auto color = make_float4(0, 0, 0, 175.0f);
+				if (elm.x < 0 || elm.y < 0 || elm.x >= w || elm.y >= h) {
+					color.w = 70.0f;
+				}
 				auto r = 5.0f;
 				CUDA(cudaDrawCircle(image, w, h, format, elm.x, elm.y, r, color));
-				font->OverlayText(image, format, w, h, shipInfo[i].shipName.c_str(), elm.x + r + 1.0f, elm.y, color);
+				font->OverlayText(image, format, w, h, str, elm.x - ox, elm.y - oy, color);
 			}
+
+#if 1
+			// draw calibration points (debug)
+			AisUtil::GeoCoords srcGeoPoints[] = {
+				{ 35.592499, 139.790526 }, // a
+				{ 35.586024, 139.784049 }, // b
+				{ 35.633655, 139.759223 }, // c
+				{ 35.625142, 139.767833 }, // d
+			};
+			AisUtil::ScreenCoords srcScreenPoints[] = {
+				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[0]),
+				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[1]),
+				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[2]),
+				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[3]),
+			};
+			for (int i = 0; i < 4; i++) {
+				char str[2] = {};
+				str[0] = 'a' + i;
+				auto color = make_float4(255, 0, 0, 175);
+				auto r = 5.0f;
+				CUDA(cudaDrawCircle(image, w, h, format, srcScreenPoints[i].x, srcScreenPoints[i].y, r, color));
+				font->OverlayText(image, format, w, h, str, srcScreenPoints[i].x + r + 1.0f, srcScreenPoints[i].y, color);
+			}
+#endif
 		
 			for( int n=0; n < numDetections; n++ )
 			{

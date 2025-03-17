@@ -82,7 +82,7 @@ AisUtil::ShipInfo AisLoader::parseJson(nlohmann::json jsonData) {
             AisUtil::ShipInfo shipInfo;
             shipInfo.unixTime          = mktime(&tm);
             shipInfo.mmsi              = metaData["MMSI"];
-            shipInfo.shipName          = metaData["ShipName"];
+            shipInfo.shipName          = AisUtil::RTrim(metaData["ShipName"]);
             shipInfo.geoPos.latitude   = metaData["latitude"];
             shipInfo.geoPos.longitude  = metaData["longitude"];
             shipInfo.cog               = msg["Cog"];

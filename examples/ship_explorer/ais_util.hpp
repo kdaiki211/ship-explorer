@@ -27,4 +27,5 @@ public:
     static void NormalizeDegree(float& degree);
     static void NormalizeRadian(double& rad);
     static void AddSeconds(std::tm& tm, int seconds);
+    static std::string RTrim(const std::string& str);
 };
