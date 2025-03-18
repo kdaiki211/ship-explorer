@@ -6,24 +6,10 @@
 #include "ais_bbox_mapper.hpp"
 using namespace std;
 
-AisBboxMapper::AisBboxMapper(AisUtil::GeoCoords currentLocation, AisUtil::GeoCoords lookAt, uint32_t screenW, uint32_t screenH)
-    : currentLocation(currentLocation), lookAt(lookAt), width(screenW), height(screenH) {
-
-    // calculate perspective transform matrix
-    AisUtil::GeoCoords srcGeoPoints[] = { // TODO: parameterize
-        { 35.592499, 139.790526 }, // a
-        { 35.586024, 139.784049 }, // b
-        { 35.633655, 139.759223 }, // c
-        { 35.625142, 139.767833 }, // d
-    };
-    cv::Point2f dstScreenPoints[] = { // TODO: parameterize
-        { 682,  364 }, // a
-        { 1672, 355 }, // b
-        { 733,  905 }, // c
-        { 217,  597 }, // d
-    };
+AisBboxMapper::AisBboxMapper(const AisUtil::GeoCoords srcGeoPoints[], const cv::Point2f dstScreenPoints[]) {
     perspectiveMatrix = calculatePerspectiveMatrix(srcGeoPoints, dstScreenPoints);
 
+#if 0
     cout << "Perspective Transformation Matrix:" << endl;
     for (int i = 0; i < perspectiveMatrix.rows; i++) {
         for (int j = 0; j < perspectiveMatrix.cols; j++) {
@@ -31,6 +17,7 @@ AisBboxMapper::AisBboxMapper(AisUtil::GeoCoords currentLocation, AisUtil::GeoCoo
         }
         cout << endl;
     }
+#endif
 }
 
 AisBboxMapper::~AisBboxMapper() {
@@ -73,7 +60,7 @@ void AisBboxMapper::UpdateLocalShipInfo(time_t unixTime, const vector<AisUtil::S
     }
 }
 
-AisUtil::ScreenCoords AisBboxMapper::ConvertGeoCoordsToScreenCoords(AisUtil::GeoCoords& geoPos) {
+AisUtil::ScreenCoords AisBboxMapper::ConvertGeoCoordsToScreenCoords(const AisUtil::GeoCoords& geoPos) {
     // calculate screen coords using perspective matrix
     cv::Mat p0 = cv::Mat::zeros(3, 1, CV_64F);
     p0.at<double>(0, 0) = geoPos.longitude;
@@ -84,7 +71,7 @@ AisUtil::ScreenCoords AisBboxMapper::ConvertGeoCoordsToScreenCoords(AisUtil::Geo
     return { float(p1.at<double>(0, 0)), float(p1.at<double>(1, 0)) };
 }
 
-cv::Mat AisBboxMapper::calculatePerspectiveMatrix(AisUtil::GeoCoords srcGeoPoints[], cv::Point2f dstScreenPoints[]) {
+cv::Mat AisBboxMapper::calculatePerspectiveMatrix(const AisUtil::GeoCoords srcGeoPoints[], const cv::Point2f dstScreenPoints[]) {
     cv::Point2f srcScreenPoints[4];
     for (int i = 0; i < 4; i++) {
         auto tmp = srcGeoPoints[i];

@@ -103,16 +103,6 @@ int main( int argc, char** argv )
 	}
 
 	/*
-	 * read latitude and longitude
-	 */
-	auto currentLocationStr = cmdLine.GetString("geo-current-location");
-	auto lookAtStr          = cmdLine.GetString("geo-look-at");
-	AisUtil::GeoCoords currentLocation;
-	AisUtil::GeoCoords lookAt;
-	sscanf(currentLocationStr, "%lf,%lf", &currentLocation.latitude, &currentLocation.longitude);
-	sscanf(lookAtStr,          "%lf,%lf", &lookAt.latitude,          &lookAt.longitude);
-
-	/*
 	 * attach signal handler
 	 */
 	if( signal(SIGINT, sig_handler) == SIG_ERR )
@@ -139,7 +129,20 @@ int main( int argc, char** argv )
 	assert(aisLoader.IsLoaded());
 	AisStreamReader asr(aisLoader.GetLoadedShipInfo());
 	LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
-	AisBboxMapper mapper(currentLocation, lookAt, w, h);
+
+	const AisUtil::GeoCoords srcGeoPoints[] = {
+		{ 35.592499, 139.790526 }, // a
+		{ 35.586024, 139.784049 }, // b
+		{ 35.633655, 139.759223 }, // c
+		{ 35.625142, 139.767833 }, // d
+	};
+	const cv::Point2f dstScreenPoints[] = {
+		{ 682,  364 }, // a
+		{ 1672, 355 }, // b
+		{ 733,  905 }, // c
+		{ 217,  597 }, // d
+	};
+	AisBboxMapper mapper(srcGeoPoints, dstScreenPoints);
 
 
 	/*
@@ -261,25 +264,21 @@ int main( int argc, char** argv )
 
 #if 1
 			// draw calibration points (debug)
-			AisUtil::GeoCoords srcGeoPoints[] = {
-				{ 35.592499, 139.790526 }, // a
-				{ 35.586024, 139.784049 }, // b
-				{ 35.633655, 139.759223 }, // c
-				{ 35.625142, 139.767833 }, // d
-			};
-			AisUtil::ScreenCoords srcScreenPoints[] = {
+			AisUtil::ScreenCoords dstScreenPointsForVerify[] = {
 				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[0]),
 				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[1]),
 				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[2]),
 				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[3]),
 			};
 			for (int i = 0; i < 4; i++) {
-				char str[2] = {};
+				char str[2];
 				str[0] = 'a' + i;
+				str[1] = '\0';
 				auto color = make_float4(255, 0, 0, 175);
 				auto r = 5.0f;
-				CUDA(cudaDrawCircle(image, w, h, format, srcScreenPoints[i].x, srcScreenPoints[i].y, r, color));
-				font->OverlayText(image, format, w, h, str, srcScreenPoints[i].x + r + 1.0f, srcScreenPoints[i].y, color);
+				auto p = dstScreenPointsForVerify[i];
+				CUDA(cudaDrawCircle(image, w, h, format, p.x, p.y, r, color));
+				font->OverlayText(image, format, w, h, str, p.x + r + 1.0f, p.y, color);
 			}
 #endif
 		
