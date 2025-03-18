@@ -1127,8 +1127,10 @@ uint32_t detectNet::OverlayFlagsFromStr( const char* str_user )
 			flags |= OVERLAY_LINES;
 		else if( strcasecmp(token, "shipname") == 0 || strcasecmp(token, "shipnames") == 0 )
 			flags |= OVERLAY_SHIPNAME;
-		else if( strcasecmp(token, "debuginfo") == 0)
-			flags |= OVERLAY_DEBUG_INFO;
+		else if( strcasecmp(token, "debuginfo1") == 0)
+			flags |= OVERLAY_DEBUG_INFO1;
+		else if( strcasecmp(token, "debuginfo2") == 0)
+			flags |= OVERLAY_DEBUG_INFO2;
 		else if( strcasecmp(token, "default") == 0 )
 			flags |= OVERLAY_DEFAULT;
 

@@ -210,19 +210,16 @@ int main( int argc, char** argv )
 		asr.Update(unixTime);
 		mapper.UpdateLocalShipInfo(unixTime, asr.GetCurrentWindow());
 
-		// prepare debug info
-		std::stringstream ss;
-		// asr.PrintCurrentWindowSummary(&ss);
-		mapper.PrintCurrentLocalShipInfoSummary(&ss);
-		auto dbgInfo = ss.str();
-
+		// detect objects in the frame
+		detectNet::Detection* detections = NULL;
+		const int numDetections = net->Detect(image, w, h, &detections, overlayFlags);
+		
 		// draw debug info
 		cudaFont* font = cudaFont::Create(adaptFontSize(w)); assert(font);
+		float4 color = make_float4(0,0,255,255);
 		auto format = IMAGE_RGB8;
 		assert(font);
-		if (overlayFlags & detectNet::OVERLAY_DEBUG_INFO) {
-			float4 color = make_float4(0,0,255,255);
-
+		if (overlayFlags & detectNet::OVERLAY_DEBUG_INFO1) {
 			// timestamp
 			if (timestampInSec >= 0) {
 				char tsStr[8];
@@ -231,15 +228,55 @@ int main( int argc, char** argv )
 				font->OverlayText(image, format, w, h, tsStr, tsPos.x, tsPos.y, color);
 			}
 
-			// debug info
+			// draw ship candidate position
+			auto shipInfo  = mapper.GetLocalShipInfo();
+			auto scrCoords = mapper.GetLocalShipScreenCoords();
+			int shipIdx = 0;
+			for (int i = 0; i < shipInfo.size(); i++) {
+				auto str = shipInfo[i].shipName.c_str();
+				auto elm = scrCoords[i];
+				elm.x = min(max(elm.x, -1), w);
+				elm.y = min(max(elm.y, -1), h);
+				auto ext = font->TextExtents(str, elm.x, elm.y);
+				auto pad = 5.0f;
+				auto ox = (ext.z >= w-1) ? (ext.z - (w-1) + pad) : -pad;
+				auto oy = (ext.w >= h-1) ? (ext.w - (h-1) + pad) : -pad;
+				auto color = make_float4(0, 0, 0, 175.0f);
+				if (elm.x < 0 || elm.y < 0 || elm.x >= w || elm.y >= h) {
+					color.w = 70.0f;
+				}
+				auto r = 5.0f;
+				CUDA(cudaDrawCircle(image, w, h, format, elm.x, elm.y, r, color));
+				font->OverlayText(image, format, w, h, str, elm.x - ox, elm.y - oy, color);
+			}
+
+			// draw geo2scr points (debug)
+			AisUtil::ScreenCoords dstScreenPointsForVerify[] = {
+				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[0]),
+				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[1]),
+				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[2]),
+				mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[3]),
+			};
+			for (int i = 0; i < 4; i++) {
+				char str[2];
+				str[0] = 'a' + i;
+				str[1] = '\0';
+				auto color = make_float4(255, 0, 0, 175);
+				auto r = 5.0f;
+				auto p = dstScreenPointsForVerify[i];
+				CUDA(cudaDrawCircle(image, w, h, format, p.x, p.y, r, color));
+				font->OverlayText(image, format, w, h, str, p.x + r + 1.0f, p.y, color);
+			}
+		}
+		if (overlayFlags & detectNet::OVERLAY_DEBUG_INFO2) {
+			// draw current local ship info
+			std::stringstream ss;
+			mapper.PrintCurrentLocalShipInfoSummary(&ss);
+			auto dbgInfo = ss.str();
+
 			const int2 diPos = make_int2(w / 5, 10);
 			font->OverlayText(image, format, w, h, dbgInfo.c_str(), diPos.x, diPos.y, color);
 		}
-
-		// detect objects in the frame
-		detectNet::Detection* detections = NULL;
-	
-		const int numDetections = net->Detect(image, w, h, &detections, overlayFlags);
 		
 		if( numDetections > 0 )
 		{
@@ -248,48 +285,6 @@ int main( int argc, char** argv )
 			const auto distanceThreshold = 150;
 			auto shipNameList = mapper.SearchForShipName(detections, numDetections, distanceThreshold);
 
-			// draw ship candidate position
-			if (overlayFlags & detectNet::OVERLAY_DEBUG_INFO) {
-				auto shipInfo  = mapper.GetLocalShipInfo();
-				auto scrCoords = mapper.GetLocalShipScreenCoords();
-				int shipIdx = 0;
-				for (int i = 0; i < shipInfo.size(); i++) {
-					auto str = shipInfo[i].shipName.c_str();
-					auto elm = scrCoords[i];
-					elm.x = min(max(elm.x, -1), w);
-					elm.y = min(max(elm.y, -1), h);
-					auto ext = font->TextExtents(str, elm.x, elm.y);
-					auto pad = 5.0f;
-					auto ox = (ext.z >= w-1) ? (ext.z - (w-1) + pad) : -pad;
-					auto oy = (ext.w >= h-1) ? (ext.w - (h-1) + pad) : -pad;
-					auto color = make_float4(0, 0, 0, 175.0f);
-					if (elm.x < 0 || elm.y < 0 || elm.x >= w || elm.y >= h) {
-						color.w = 70.0f;
-					}
-					auto r = 5.0f;
-					CUDA(cudaDrawCircle(image, w, h, format, elm.x, elm.y, r, color));
-					font->OverlayText(image, format, w, h, str, elm.x - ox, elm.y - oy, color);
-				}
-
-				// draw geo2scr points (debug)
-				AisUtil::ScreenCoords dstScreenPointsForVerify[] = {
-					mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[0]),
-					mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[1]),
-					mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[2]),
-					mapper.ConvertGeoCoordsToScreenCoords(srcGeoPoints[3]),
-				};
-				for (int i = 0; i < 4; i++) {
-					char str[2];
-					str[0] = 'a' + i;
-					str[1] = '\0';
-					auto color = make_float4(255, 0, 0, 175);
-					auto r = 5.0f;
-					auto p = dstScreenPointsForVerify[i];
-					CUDA(cudaDrawCircle(image, w, h, format, p.x, p.y, r, color));
-					font->OverlayText(image, format, w, h, str, p.x + r + 1.0f, p.y, color);
-				}
-			}
-		
 			for( int n=0; n < numDetections; n++ )
 			{
 				LogVerbose("\ndetected obj %i  class #%u (%s)  confidence=%f\n", n, detections[n].ClassID, net->GetClassDesc(detections[n].ClassID), detections[n].Confidence);
