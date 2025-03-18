@@ -24,14 +24,21 @@
                      "--src-geo-b=35.586024,139.784049",
                      "--src-geo-c=35.633655,139.759223",
                      "--src-geo-d=35.625142,139.767833",
+
                      "--input-timestamp-utc=2025-03-08 23:16:33",
                      "--dst-scr-a=682,364",
                      "--dst-scr-b=1672,355",
                      "--dst-scr-c=733,905",
                      "--dst-scr-d=217,597",
                      "/home/nvidia/jetson-inference/data/IMG_8071.MOV", // input
+
                      // "--input-timestamp-utc=2025-03-09 01:46:23",
+                     // "--dst-scr-a=559,309",
+                     // "--dst-scr-b=1546,291",
+                     // "--dst-scr-c=614,852",
+                     // "--dst-scr-d=94,535",
                      // "/home/nvidia/jetson-inference/data/IMG_8072.MOV", // input
+
                      "rtp://192.168.101.96:1234" /* "rtp://192.168.62.97:1234" */ // output
                     ],
             "stopAtEntry": false,
