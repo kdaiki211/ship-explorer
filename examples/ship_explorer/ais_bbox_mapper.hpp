@@ -12,7 +12,7 @@ public:
     AisBboxMapper(const AisUtil::GeoCoords srcGeoPoints[], const cv::Point2f dstScreenPoints[]);
     ~AisBboxMapper();
     void UpdateLocalShipInfo(time_t unixTime, const std::vector<AisUtil::ShipInfo>& shipInfoRef);
-    std::vector<std::string> SearchForShipName(detectNet::Detection* detections, int numDetections);
+    std::vector<std::string> SearchForShipName(detectNet::Detection* detections, int numDetections, float distanceThreshold);
     void PrintCurrentLocalShipInfo(std::stringstream* ss=nullptr);
     void PrintCurrentLocalShipInfoSummary(std::stringstream* ss=nullptr);
     const std::vector<AisUtil::ShipInfo>& GetLocalShipInfo(void);

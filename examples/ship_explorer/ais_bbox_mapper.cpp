@@ -80,7 +80,7 @@ cv::Mat AisBboxMapper::calculatePerspectiveMatrix(const AisUtil::GeoCoords srcGe
     return cv::getPerspectiveTransform(srcScreenPoints, dstScreenPoints);
 }
 
-vector<string> AisBboxMapper::SearchForShipName(detectNet::Detection* detections, int numDetections) {
+vector<string> AisBboxMapper::SearchForShipName(detectNet::Detection* detections, int numDetections, float distanceThreshold) {
     // convert bounding boxes to points
     detectedPoint.clear();
     for (int i = 0; i < numDetections; i++) {
@@ -113,17 +113,22 @@ vector<string> AisBboxMapper::SearchForShipName(detectNet::Detection* detections
     // select a candidate localShipInfo for each detection
     vector<string> shipNameList;
     for (int i = 0; i < numDetections; i++) {
+        string pushStr = "?";
         auto it = find_if(distance.begin(), distance.end(), [i](tuple<double, int, int> elm) {
             return get<1>(elm) == i;
         });
         if (it == distance.end()) {
             // no more candidates
-            break;
+            shipNameList.push_back(pushStr);
+            continue; // push default string for remaining of numDetections
         }
 
         // push shipName
         auto localShipId = get<2>(*it);
-        shipNameList.push_back(localShipInfo[localShipId].shipName);
+        if (get<0>(*it) <= pow(distanceThreshold, 2)) {
+            pushStr = localShipInfo[localShipId].shipName;
+        }
+        shipNameList.push_back(pushStr);
 
         // remove selected localShipInfo from distance
         auto it2 = remove_if(distance.begin(), distance.end(), [localShipId](tuple<double, int, int> elm) {
