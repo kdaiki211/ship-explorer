@@ -130,18 +130,29 @@ int main( int argc, char** argv )
 	AisStreamReader asr(aisLoader.GetLoadedShipInfo());
 	LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
 
-	const AisUtil::GeoCoords srcGeoPoints[] = {
-		{ 35.592499, 139.790526 }, // a
-		{ 35.586024, 139.784049 }, // b
-		{ 35.633655, 139.759223 }, // c
-		{ 35.625142, 139.767833 }, // d
+	AisUtil::GeoCoords srcGeoPoints[4];
+	cv::Point2f dstScreenPoints[4];
+	const char* srcGeoPointsStr[] = {
+		cmdLine.GetString("src-geo-a"),
+		cmdLine.GetString("src-geo-b"),
+		cmdLine.GetString("src-geo-c"),
+		cmdLine.GetString("src-geo-d"),
 	};
-	const cv::Point2f dstScreenPoints[] = {
-		{ 682,  364 }, // a
-		{ 1672, 355 }, // b
-		{ 733,  905 }, // c
-		{ 217,  597 }, // d
+	const char* dstScreenPointsStr[] = {
+		cmdLine.GetString("dst-scr-a"),
+		cmdLine.GetString("dst-scr-b"),
+		cmdLine.GetString("dst-scr-c"),
+		cmdLine.GetString("dst-scr-d"),
 	};
+	for (int i = 0; i < 4; i++) {
+		sscanf(srcGeoPointsStr[i], "%lf,%lf",
+			&srcGeoPoints[i].latitude,
+			&srcGeoPoints[i].longitude);
+		int x, y;
+		sscanf(dstScreenPointsStr[i], "%d,%d", &x, &y);
+		dstScreenPoints[i].x = static_cast<float>(x);
+		dstScreenPoints[i].y = static_cast<float>(y);
+	}
 	AisBboxMapper mapper(srcGeoPoints, dstScreenPoints);
 
 
