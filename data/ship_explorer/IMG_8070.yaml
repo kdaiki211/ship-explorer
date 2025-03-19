@@ -1,0 +1,17 @@
+# geo to screen mapping for perspective transform
+src-geo:
+  a: [35.592499, 139.790526]
+  b: [35.586024, 139.784049]
+  c: [35.633655, 139.759223]
+  d: [35.625142, 139.767833]
+dst-scr:
+  a: [682, 364]
+  b: [1672, 355]
+  c: [733, 905]
+  d: [217, 597]
+
+# AIS log file (ndjson format)
+ais-ndjson: "examples/ship_explorer/ais_log_20250308_152449.ndjson"
+
+# input video file and its recorded timestamp
+input-timestamp-utc: "2025-03-08 23:16:57"

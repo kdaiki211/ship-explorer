@@ -1,6 +1,7 @@
 build/
-data/
+data/*
 logs/
 *.pyc
 *.tar.gz
 *.pem
+!data/ship_explorer
