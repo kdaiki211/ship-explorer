@@ -280,5 +280,5 @@ $ ship_explorer --model python/training/detection/ssd/models/ddsn_boat7_using_my
 
 ## ライセンス
 
-fork 元である [dusty-nv/jetson-inference](https://github.com/dusty-nv/jetson-inference) のライセンスに従います。
-LICENSE.md を参照して下さい。
+fork 元である [dusty-nv/jetson-inference](https://github.com/dusty-nv/jetson-inference) のライセンスに従う。
+LICENSE.md を参照のこと。
