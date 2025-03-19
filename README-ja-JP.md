@@ -2,18 +2,13 @@
 
 ## Overview
 
-Ship Explorer は入力ビデオソース内に映る船舶を SSD-Mobilenet v1 ベースの AI モデルを用いて物体検出し、そのビデオが撮影された時点の AIS (Automatic Identification System) 情報からその船舶の名称候補をバウンディングボックス上に表示する。
-
-応用例としては、観光向けに船舶名を表示したり、海上監視を円滑にしたりすることが考えられる。
+Ship Explorer は、船舶を SSD-Mobilenet v1 ベースの AI モデルで物体検出し、ビデオ撮影時の AIS (Automatic Identification System) 情報をもとに、船名候補をバウンディングボックス内に表示するシステムである。
 
 <img src="examples/ship_explorer/ship_explorer_screenshot.png">
 
-このプロジェクトは [dusty-nv/jetson-inference](https://github.com/dusty-nv/jetson-inference) の [examples/detectnet](https://github.com/dusty-nv/jetson-inference/tree/master/examples/detectnet) をベースに作成している。
+本プロジェクトは [dusty-nv/jetson-inference](https://github.com/dusty-nv/jetson-inference) の [examples/detectnet](https://github.com/dusty-nv/jetson-inference/tree/master/examples/detectnet) をベースに作成している。
 
-AI モデルは事前に高所 (ビル) から海面を見下ろすように撮影した船舶の画像に対してアノテーションを行い転移学習を実施した。
-
-AIS 情報は [aisstream.io](https://aisstream.io/) から取得した。
-
+AI モデルは高所 (ビル) から海面を見下ろすように撮影した船舶の画像を使用し、アノテーションを施した後に転移学習を行いました。AIS 情報は [aisstream.io](https://aisstream.io/) から取得している。
 
 ## 特徴
 
@@ -256,15 +251,25 @@ $ ship_explorer --model python/training/detection/ssd/models/ddsn_boat7_using_my
 * `aid-ndjson` には aisstream.io から取得した JSON データ列 (改行区切り) のファイル名を指定する
 * `input-timestamp-utc` には動画ファイルの撮影開始日時を UTC で指定する
 
-## 課題
+## 課題と今後の展望
 
 * モデルの精度改善
   * 現時点ではデータセット数が不足しているためか、船舶検出の精度が低い
   * 船舶を見失ったり、1 つの船舶を 2 つ以上と認識してしまう場合がある
   * より多くのデータセットを学習し精度を上げる必要がある
+    * 様々な時間帯
+    * 様々な種類、大きさの船舶
+    * 悪天候時や夜間
 * リアルタイム検出
   * 高倍率 (5x 以上) の USB カメラとリアルタイムに取得した AIS 情報を用いて船舶名称を表示<br>
     (現時点では事前に動画を撮影し、撮影時点での AIS 情報のログを別途 NDJSON 形式で保存する必要がある)
+* 本プロジェクトの応用
+  * 観光向け
+    * 海上を移動する船舶の名前をリアルタイムに表示
+  * 海上監視
+    * 船舶の識別を支援し安全管理を向上
+    * AIS を発信していない船舶を見つけたらアラート発信
+
 
 ## ライセンス
 
