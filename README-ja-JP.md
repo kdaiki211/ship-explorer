@@ -8,7 +8,7 @@ Ship Explorer は、船舶を SSD-Mobilenet v1 ベースの AI モデルで物�
 
 本プロジェクトは [dusty-nv/jetson-inference](https://github.com/dusty-nv/jetson-inference) の [examples/detectnet](https://github.com/dusty-nv/jetson-inference/tree/master/examples/detectnet) をベースに作成している。
 
-AI モデルは高所 (ビル) から海面を見下ろすように撮影した船舶の画像を使用し、アノテーションを施した後に転移学習を行いました。AIS 情報は [aisstream.io](https://aisstream.io/) から取得している。
+AI モデルは高所 (ビル) から海面を見下ろすように撮影した船舶の画像を使用し、アノテーションを施した後に転移学習を行った。AIS 情報は [aisstream.io](https://aisstream.io/) から取得している。
 
 ## 特徴
 
