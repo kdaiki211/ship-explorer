@@ -39,6 +39,17 @@ AIS 情報は [aisstream.io](https://aisstream.io/) から取得した。
 * その他
   * Jetson を遠隔地に設置したため出力映像を GStreamer 経由で閲覧 (with RTP, over VPN)
 
+## プロジェクト構成
+
+```
+/jetson-inference/
+├── build/                     # コンパイル済みバイナリ
+├── data/                      # 入力データやサンプル
+├── python/training/detection/ # 学習用スクリプト (SSD-Mobilenet v1)
+├── tools/                     # AIS 情報取得ツール、RTP 受信用スクリプト
+└── examples/ship_explorer/    # 本プロジェクトの主な実装
+```
+
 ## セットアップ
 
 ### Jetson TX1 上
@@ -184,9 +195,11 @@ train_ssd.py から出力されるモデルは PyTorch 形式 (.pth) である�
 ## 実行
 
 Ship Explorer の実行ファイルは build/aarch64/bin/ship_explorer に出力される。
+実行すると指定した RTP アドレスへ Jetson TX1 から出力された映像ストリームが転送される。
 
 下記例のように ship_explorer を実行する。
 VSCode 環境から実行する場合 .vscode/launch.json を用いるとより簡単に実行することができる。
+
 
 ```shell
 $ cd /path/to/jetson-inference
@@ -252,3 +265,8 @@ $ ship_explorer --model python/training/detection/ssd/models/ddsn_boat7_using_my
 * リアルタイム検出
   * 高倍率 (5x 以上) の USB カメラとリアルタイムに取得した AIS 情報を用いて船舶名称を表示<br>
     (現時点では事前に動画を撮影し、撮影時点での AIS 情報のログを別途 NDJSON 形式で保存する必要がある)
+
+## ライセンス
+
+fork 元である [dusty-nv/jetson-inference](https://github.com/dusty-nv/jetson-inference) のライセンスに従います。
+LICENSE.md を参照して下さい。
