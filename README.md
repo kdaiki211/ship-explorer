@@ -241,6 +241,13 @@ The arguments follow those in examples/detectnet.cpp, but Ship Explorer adds the
 - `aid-ndjson` specifies the filename of the JSON data (newline-delimited) obtained from aisstream.io  
 - `input-timestamp-utc` specifies the shooting start time of the video in UTC  
 
+The sample input videos used for the operation check have been uploaded to YouTube.
+
+* [IMG_8070.MOV](https://youtu.be/EMo_rdJeIP0)
+* [IMG_8071.MOV](https://youtu.be/7LHS-8FcL8Q)
+* [IMG_8072.MOV](https://youtu.be/EFFWqWWuif8)
+* [IMG_8100.MOV](https://youtu.be/VP1q-WEceiM)
+
 ## Future Issues and Outlook
 
 - Improving model accuracy  

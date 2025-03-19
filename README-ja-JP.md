@@ -251,6 +251,13 @@ $ ship_explorer --model python/training/detection/ssd/models/ddsn_boat7_using_my
 * `aid-ndjson` には aisstream.io から取得した JSON データ列 (改行区切り) のファイル名を指定する
 * `input-timestamp-utc` には動画ファイルの撮影開始日時を UTC で指定する
 
+動作確認で使用した入力動画のサンプルは YouTube にアップロードした。
+
+* [IMG_8070.MOV](https://youtu.be/EMo_rdJeIP0)
+* [IMG_8071.MOV](https://youtu.be/7LHS-8FcL8Q)
+* [IMG_8072.MOV](https://youtu.be/EFFWqWWuif8)
+* [IMG_8100.MOV](https://youtu.be/VP1q-WEceiM)
+
 ## 課題と今後の展望
 
 * モデルの精度改善
