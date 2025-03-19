@@ -86,7 +86,7 @@ Windows 環境の場合、[GStreamer の公式サイト](https://gstreamer.freed
 > gst-launch-1.0.exe -v udpsrc port=1234 caps = "application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96" ! rtph264depay ! decodebin ! videoconvert ! autovideosink
 ```
 
-上記コマンドは jetson-inference/tools/gstreamer.bat から実行することができる。Ubuntu 環境では下記コマンドでインストールする。
+上記コマンドは jetson-inference/tools/gstreamer.bat から実行することができる。
 
 #### Label Studio
 
