@@ -40,6 +40,8 @@
 #include <signal.h>
 #include <cassert>
 
+#include <yaml-cpp/yaml.h>
+
 
 bool signal_recieved = false;
 
@@ -83,23 +85,44 @@ int main( int argc, char** argv )
 		return usage();
 
 	/*
+	 * get json config
+	 */
+	auto configFilename = cmdLine.GetString("config");
+	YAML::Node config;
+	if (configFilename) {
+		try {
+			config = YAML::LoadFile(configFilename);
+		} catch (const YAML::Exception& e) {
+			LogError("Failed to parse YAML file");
+		}
+	}
+
+	/*
 	 * load AIS information
 	 */
 	AisLoader aisLoader;
-	auto aisNdjsonFilename = cmdLine.GetString("ais-ndjson");
-	if (aisNdjsonFilename) {
-		LogVerbose("Loading AIS from %s...\n", aisNdjsonFilename);
-		aisLoader = AisLoader(std::string(aisNdjsonFilename));
+	if (config) {
+		try {
+			auto aisNdjsonFilename = config["ais-ndjson"].as<std::string>();
+			LogVerbose("Loading AIS from %s...\n", aisNdjsonFilename.c_str());
+			aisLoader = AisLoader(std::string(aisNdjsonFilename));
+		} catch (YAML::Exception& e) {
+			LogError("Failed to read ais-ndjson from yaml\n");
+		}
 	}
 
 	/*
 	 * read the timestamp of the input video
 	 */
-	auto tsUtcStr = cmdLine.GetString("input-timestamp-utc");
 	tm originTm = {};
-	if (tsUtcStr) {
-		std::istringstream ss(tsUtcStr);
-		ss >> std::get_time(&originTm, "%Y-%m-%d %H:%M:%S");
+	if (config) {
+		try {
+			auto tsUtcStr = config["input-timestamp-utc"].as<std::string>();
+			std::istringstream ss(tsUtcStr);
+			ss >> std::get_time(&originTm, "%Y-%m-%d %H:%M:%S");
+		} catch (YAML::Exception& e) {
+			LogError("Failed to read input-timestamp-utc from yaml\n");
+		}
 	}
 
 	/*
@@ -130,29 +153,18 @@ int main( int argc, char** argv )
 	AisStreamReader asr(aisLoader.GetLoadedShipInfo());
 	LogVerbose("Loaded AIS successfully (%zu entries).\n", aisLoader.GetLoadedEntryCount());
 
-	AisUtil::GeoCoords srcGeoPoints[4];
-	cv::Point2f dstScreenPoints[4];
-	const char* srcGeoPointsStr[] = {
-		cmdLine.GetString("src-geo-a"),
-		cmdLine.GetString("src-geo-b"),
-		cmdLine.GetString("src-geo-c"),
-		cmdLine.GetString("src-geo-d"),
+	const AisUtil::GeoCoords srcGeoPoints[] = {
+		{ config["src-geo"]["a"][0].as<double>(), config["src-geo"]["a"][1].as<double>() },
+		{ config["src-geo"]["b"][0].as<double>(), config["src-geo"]["b"][1].as<double>() },
+		{ config["src-geo"]["c"][0].as<double>(), config["src-geo"]["c"][1].as<double>() },
+		{ config["src-geo"]["d"][0].as<double>(), config["src-geo"]["d"][1].as<double>() },
 	};
-	const char* dstScreenPointsStr[] = {
-		cmdLine.GetString("dst-scr-a"),
-		cmdLine.GetString("dst-scr-b"),
-		cmdLine.GetString("dst-scr-c"),
-		cmdLine.GetString("dst-scr-d"),
+	const cv::Point2f dstScreenPoints[] = {
+		{ config["dst-scr"]["a"][0].as<float>(), config["dst-scr"]["a"][1].as<float>() },
+		{ config["dst-scr"]["b"][0].as<float>(), config["dst-scr"]["b"][1].as<float>() },
+		{ config["dst-scr"]["c"][0].as<float>(), config["dst-scr"]["c"][1].as<float>() },
+		{ config["dst-scr"]["d"][0].as<float>(), config["dst-scr"]["d"][1].as<float>() },
 	};
-	for (int i = 0; i < 4; i++) {
-		sscanf(srcGeoPointsStr[i], "%lf,%lf",
-			&srcGeoPoints[i].latitude,
-			&srcGeoPoints[i].longitude);
-		int x, y;
-		sscanf(dstScreenPointsStr[i], "%d,%d", &x, &y);
-		dstScreenPoints[i].x = static_cast<float>(x);
-		dstScreenPoints[i].y = static_cast<float>(y);
-	}
 	AisBboxMapper mapper(srcGeoPoints, dstScreenPoints);
 
 
