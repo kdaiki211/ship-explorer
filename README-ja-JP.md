@@ -4,7 +4,7 @@
 
 Ship Explorer は入力ビデオソース内に映る船舶を SSD-Mobilenet v1 ベースの AI モデルを用いて物体検出し、そのビデオが撮影された時点の AIS (Automatic Identification System) 情報からその船舶の名称候補をバウンディングボックス上に表示する。
 
-本プロジェクトのユースケースは観光のシーンにおいて海に浮かぶ船舶のリアルタイム船名表示が考えられる。
+応用例としては、観光向けに船舶名を表示したり、海上監視を円滑にしたりすることが考えられる。
 
 <img src="examples/ship_explorer/ship_explorer_screenshot.png">
 
@@ -41,22 +41,24 @@ AIS 情報は [aisstream.io](https://aisstream.io/) から取得した。
 
 ## セットアップ
 
-### JetPack
+### Jetson TX1 上
 
-[Setting up Jetson with JetPack](https://github.com/dusty-nv/jetson-inference/blob/master/docs/jetpack-setup-2.md) の手順を参考に Jetson TX1 へ JetPack をインストールする。Jetson TX1 では JetPack のインストール方法として SDK Manager による方法のみをサポートすることに注意する。
+#### JetPack
+
+[Setting up Jetson with JetPack](https://github.com/dusty-nv/jetson-inference/blob/master/docs/jetpack-setup-2.md) の手順を参考に Jetson TX1 へ JetPack 4.6.6 ([TX1 にインストール可能な最新版](https://developer.nvidia.com/embedded/jetpack-archive)) をインストールする。Jetson TX1 では JetPack のインストール方法として SDK Manager による方法のみをサポートすることに注意する。
 
 ただしそのままの手順でインストールすると eMMC の容量不足によりインストールが失敗してしまう。対策として、先に最小のインストール項目だけを選択して eMMC へ JetPack をインストールし、eMMC のデータを SD カードにコピーして SD カードからのブート設定を行ってから JetPack のインストーラーを再度実行し、スキップした項目のインストールをする必要がある。
 
 SD カードからのブート設定方法については[こちら](https://jkjung-avt.github.io/sd-rootfs-on-tx1/)の記事を参照されたい。
 
-### パッケージ
+#### パッケージ
 
 ```shell
 $ sudo apt update
 $ sudo apt install libpython3-dev python3-numpy git-lfs libyaml-cpp-dev
 ```
 
-### ビルド
+#### ビルド
 
 ```shell
 $ cd /path/to/jetson-inference
@@ -65,7 +67,24 @@ $ cmake ..
 $ make -j2
 ```
 
-### Label Studio
+### Windows or Ubuntu マシン上
+
+#### GStreamer
+
+Jetson TX1 から出力される映像をリアルタイムで受信・表示するために使用する。
+Windows 環境の場合、[GStreamer の公式サイト](https://gstreamer.freedesktop.org/download/#windows)から runtime と development installer をダウンロードしてインストールする。
+
+実行コマンド例:
+
+```bat
+> gst-launch-1.0.exe -v udpsrc port=1234 caps = "application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96" ! rtph264depay ! decodebin ! videoconvert ! autovideosink
+```
+
+上記コマンドは jetson-inference/tools/gstreamer.bat から実行することができる。Ubuntu 環境では下記コマンドでインストールする。
+
+#### Label Studio
+
+アノテーションの際に使用する。
 
 ```shell
 $ pip install label-studio
