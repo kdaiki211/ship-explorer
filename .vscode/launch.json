@@ -9,8 +9,8 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/aarch64/bin/ship_explorer",
-            "args": ["--model=python/training/detection/ssd/models/ddsn_boat7_using_my_dataset/mb1-ssd-Epoch-499-Loss-2.1141648292541504.onnx",
-                     "--labels=python/training/detection/ssd/models/ddsn_boat7_using_my_dataset/labels.txt",
+            "args": ["--model=data/ship_explorer/mb1-ssd-Epoch-499-Loss-2.1141648292541504.onnx",
+                     "--labels=data/ship_explorer/labels.txt",
                      "--input-blob=input_0",
                      "--output-cvg=scores",
                      "--output-bbox=boxes",
@@ -21,7 +21,7 @@
                      "--overlay=box,shipname,debuginfo1",
                      // input
                      "--config=data/ship_explorer/IMG_8071.yaml",
-                     "/home/nvidia/jetson-inference/data/ship_explorer/IMG_8071.MOV",
+                     "data/ship_explorer/IMG_8071.MOV",
                      // output
                      "rtp://192.168.101.96:1234" // for VPN
                      // "rtp://192.168.62.97:1234" // for local
