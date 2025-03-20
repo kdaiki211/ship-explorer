@@ -11,7 +11,7 @@ dst-scr:
   d: [217, 597]
 
 # AIS log file (ndjson format)
-ais-ndjson: "examples/ship_explorer/ais_log_20250308_152449.ndjson"
+ais-ndjson: "data/ship_explorer/ais_log_20250308_152449.ndjson"
 
 # input video file and its recorded timestamp
 input-timestamp-utc: "2025-03-08 23:16:33"
