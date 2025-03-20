@@ -45,6 +45,20 @@ AI モデルは高所 (ビル) から海面を見下ろすように撮影した�
 └── examples/ship_explorer/    # 本プロジェクトの主な実装
 ```
 
+examples/ship_explorer に含まれるソースファイルの用途は以下の通り。
+
+* ship_explorer.cpp
+  * Ship Explorer のエントリポイント
+  * NDJSON ファイルから AIS 情報を読み込む
+  * 動画を 1 フレームずつロードし物体検出・バウンディングボックス表示・船名表示を行う
+* ais_loader.cpp
+  * NDJSON ファイルからメモリ上に AIS 情報を展開する
+* ais_stream_reader.cpp
+  * メモリ上の AIS 情報から、現在のタイムウィンドウ内で有効な船舶情報を抽出する
+* ais_bbox_mapper.cpp
+  * バウンディングボックスと AIS 情報に含まれる候補船舶とのマッチングを行う
+  * 射影変換を行う
+
 ## セットアップ
 
 ### Jetson TX1 上
@@ -240,7 +254,7 @@ $ ship_explorer --model python/training/detection/ssd/models/ddsn_boat7_using_my
     d: [217, 597]
   
   # AIS log file (ndjson format)
-  ais-ndjson: "examples/ship_explorer/ais_log_20250308_152449.ndjson"
+  ais-ndjson: "data/ship_explorer/ais_log_20250308_152449.ndjson"
   
   # input video file and its recorded timestamp
   input-timestamp-utc: "2025-03-08 23:16:57"
@@ -256,7 +270,6 @@ $ ship_explorer --model python/training/detection/ssd/models/ddsn_boat7_using_my
 * [IMG_8070.MOV](https://youtu.be/EMo_rdJeIP0)
 * [IMG_8071.MOV](https://youtu.be/7LHS-8FcL8Q)
 * [IMG_8072.MOV](https://youtu.be/EFFWqWWuif8)
-* [IMG_8100.MOV](https://youtu.be/VP1q-WEceiM)
 
 ## 課題と今後の展望
 

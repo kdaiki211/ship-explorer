@@ -45,6 +45,20 @@ The AI model was trained using transfer learning on images of ships taken from a
 └── examples/ship_explorer/    # Main implementation of this project
 ```
 
+Usage of the source files contained in `examples/ship_explorer` is as follows:
+
+* ship_explorer.cpp
+  * Entry point for Ship Explorer
+  * Reads AIS information from an NDJSON file
+  * Loads video one frame at a time to perform object detection, display bounding boxes, and display ship names
+* ais_loader.cpp
+  * Expands AIS information from the NDJSON file into memory
+* ais_stream_reader.cpp
+  * Extracts ship information valid within the current time window from the AIS data in memory
+* ais_bbox_mapper.cpp
+  * Performs matching between bounding boxes and candidate ships included in the AIS information
+  * Performs projection transformations
+
 ## Setup
 
 ### On Jetson TX1
@@ -230,7 +244,7 @@ The arguments follow those in examples/detectnet.cpp, but Ship Explorer adds the
     d: [217, 597]
   
   # AIS log file (ndjson format)
-  ais-ndjson: "examples/ship_explorer/ais_log_20250308_152449.ndjson"
+  ais-ndjson: "data/ship_explorer/ais_log_20250308_152449.ndjson"
   
   # input video file and its recorded timestamp
   input-timestamp-utc: "2025-03-08 23:16:57"
@@ -246,7 +260,6 @@ The sample input videos used for the operation check have been uploaded to YouTu
 * [IMG_8070.MOV](https://youtu.be/EMo_rdJeIP0)
 * [IMG_8071.MOV](https://youtu.be/7LHS-8FcL8Q)
 * [IMG_8072.MOV](https://youtu.be/EFFWqWWuif8)
-* [IMG_8100.MOV](https://youtu.be/VP1q-WEceiM)
 
 ## Future Issues and Outlook
 
