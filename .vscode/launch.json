@@ -20,11 +20,11 @@
                      "--tracker-overlap=0.7",
                      "--overlay=box,shipname,debuginfo1",
                      // input
-                     "--config=data/ship_explorer/IMG_8070.yaml",
-                     "/home/nvidia/jetson-inference/data/ship_explorer/IMG_8070.MOV",
+                     "--config=data/ship_explorer/IMG_8071.yaml",
+                     "/home/nvidia/jetson-inference/data/ship_explorer/IMG_8071.MOV",
                      // output
-                     // "rtp://192.168.101.96:1234" // for VPN
-                     "rtp://192.168.62.97:1234" // for local
+                     "rtp://192.168.101.96:1234" // for VPN
+                     // "rtp://192.168.62.97:1234" // for local
                     ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
